@@ -42,7 +42,7 @@ export default function LoginButton() {
             setBusy(false);
           }}
           disabled={busy}
-          className="text-xs text-white/50 hover:text-white transition-colors"
+          className="text-xs text-white/75 hover:text-white transition-colors"
         >
           로그아웃
         </button>
