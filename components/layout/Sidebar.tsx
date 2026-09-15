@@ -88,7 +88,7 @@ export default function Sidebar() {
                   <Link
                     href={item.href}
                     onClick={close}
-                    className="block py-2.5 pl-3 text-[15px] text-white hover:text-primary-light transition-colors"
+                    className="block py-2.5 pl-3 text-[15px] font-semibold text-white hover:text-primary-light transition-colors"
                   >
                     {item.label}
                   </Link>
