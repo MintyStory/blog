@@ -88,7 +88,7 @@ export default function Sidebar() {
                   <Link
                     href={item.href}
                     onClick={close}
-                    className="block py-2.5 pl-3 text-[15px] text-white/80 hover:text-white transition-colors"
+                    className="block py-2.5 pl-3 text-[15px] text-white hover:text-primary-light transition-colors"
                   >
                     {item.label}
                   </Link>
@@ -114,10 +114,10 @@ export default function Sidebar() {
       <div className="px-6 pb-8 pt-6 border-t border-white/8 shrink-0 space-y-4">
         <LoginButton />
         <div className="flex gap-5">
-          <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="text-xs text-white/70 hover:text-white transition-colors">
+          <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="text-xs font-medium text-white hover:text-primary-light transition-colors">
             GitHub
           </a>
-          <a href="/rss.xml" className="text-xs text-white/70 hover:text-white transition-colors">
+          <a href="/rss.xml" className="text-xs font-medium text-white hover:text-primary-light transition-colors">
             RSS
           </a>
         </div>
