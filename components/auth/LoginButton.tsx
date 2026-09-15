@@ -33,7 +33,7 @@ export default function LoginButton() {
             className="h-8 w-8 rounded-full"
           />
         ) : null}
-        <span className="text-sm font-medium text-white">{user.displayName}</span>
+        <span className="text-sm text-white/80">{user.displayName}</span>
         <button
           type="button"
           onClick={async () => {
@@ -42,7 +42,7 @@ export default function LoginButton() {
             setBusy(false);
           }}
           disabled={busy}
-          className="text-xs font-medium text-white underline underline-offset-2 hover:text-primary-light transition-colors"
+          className="text-xs text-white/60 hover:text-white transition-colors"
         >
           로그아웃
         </button>
