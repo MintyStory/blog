@@ -1,0 +1,20 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{uid} {
+      allow read: if request.auth.uid == uid ||
+        (request.auth != null &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true);
+      allow create: if request.auth.uid == uid;
+      // 본인이 스스로 isAdmin을 바꾸지 못하게 막는다. isAdmin 승격은 콘솔에서 수동으로만 한다.
+      allow update: if request.auth.uid == uid &&
+        request.resource.data.isAdmin == resource.data.isAdmin;
+    }
+
+    match /postViews/{slug} {
+      allow read: if true;
+      // 조회수 증가는 반드시 서버(Admin SDK, /api/views/[slug])를 통해서만 이루어진다.
+      allow write: if false;
+    }
+  }
+}

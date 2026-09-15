@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DEV LOG — 개발 블로그</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --color-bg: #ffffff;
+      --color-text: #000000;
+      --color-text-sub: #707070;
+      --color-primary: #1E3A8A;
+      --color-primary-light: #4F7CFF;
+      --color-accent: #22C55E;
+      --color-surface-dark: #0F172A;
+      --color-surface-muted: #F5F6F8;
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--color-bg);
+      color: var(--color-text);
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+    a { text-decoration: none; color: inherit; }
+    img { display: block; max-width: 100%; }
+
+    .container { max-width: 1280px; margin: 0 auto; padding: 0 80px; }
+
+    /* ===== BUTTONS ===== */
+    .btn-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      border: 1px solid #000; border-radius: 999px;
+      padding: 11px 22px; font-size: 14px; font-weight: 500;
+      font-family: inherit; cursor: pointer;
+      background: transparent; color: #000;
+      transition: background .2s ease, color .2s ease, border-color .2s ease;
+      white-space: nowrap;
+    }
+    .btn-pill:hover { background: #000; color: #fff; }
+    .btn-pill-white { border-color: rgba(255,255,255,0.6); color: #fff; }
+    .btn-pill-white:hover { background: #fff; color: #000; border-color: #fff; }
+
+    .btn-circle {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 48px; height: 48px; border-radius: 50%;
+      border: 1px solid currentColor; font-size: 18px; cursor: pointer;
+      background: transparent; transition: background .2s ease, color .2s ease;
+      flex-shrink: 0; line-height: 1;
+    }
+
+    /* ===== EYEBROW ===== */
+    .eyebrow {
+      font-size: 12px; font-weight: 600; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--color-text-sub); margin-bottom: 16px;
+    }
+
+    /* ===== SCROLL REVEAL ===== */
+    .reveal { opacity: 0; transform: translateY(28px); transition: opacity .55s var(--ease-out), transform .55s var(--ease-out); }
+    .reveal.visible { opacity: 1; transform: none; }
+
+    /* ===== HEADER ===== */
+    #header {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      padding: 0 80px;
+      transition: background .35s ease, box-shadow .35s ease, transform .35s ease;
+    }
+    #header.scrolled {
+      background: rgba(255,255,255,0.96);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: 0 1px 0 rgba(0,0,0,0.08);
+    }
+    #header.hidden { transform: translateY(-100%); }
+    .header-inner {
+      display: flex; align-items: center; justify-content: space-between; height: 72px;
+    }
+    .logo {
+      font-size: 17px; font-weight: 800; letter-spacing: 0.06em;
+      color: #fff; transition: color .3s ease;
+    }
+    #header.scrolled .logo { color: #000; }
+
+    .hamburger {
+      display: flex; flex-direction: column; justify-content: center;
+      gap: 6px; width: 32px; height: 32px; cursor: pointer;
+      background: none; border: none; padding: 4px;
+    }
+    .hamburger span {
+      display: block; height: 1.5px; background: #fff; border-radius: 2px;
+      transition: background .3s ease;
+    }
+    #header.scrolled .hamburger span { background: #000; }
+
+    /* ===== MENU OVERLAY ===== */
+    .menu-overlay {
+      position: fixed; inset: 0; z-index: 200;
+      background: var(--color-surface-dark);
+      opacity: 0; pointer-events: none;
+      transition: opacity .4s var(--ease-out);
+    }
+    .menu-overlay.open { opacity: 1; pointer-events: all; }
+    .menu-inner { height: 100%; display: flex; flex-direction: column; padding: 0 80px 48px; }
+    .menu-top {
+      display: flex; align-items: center; justify-content: space-between; height: 72px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .menu-logo { font-size: 17px; font-weight: 800; color: #fff; letter-spacing: 0.06em; }
+    .menu-close {
+      background: none; border: none; cursor: pointer; padding: 4px;
+      color: rgba(255,255,255,0.7); transition: color .2s;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .menu-close:hover { color: #fff; }
+    .menu-nav { flex: 1; padding-top: 56px; overflow-y: auto; }
+    .menu-nav > ul { list-style: none; }
+    .menu-nav > ul > li { border-bottom: 1px solid rgba(255,255,255,0.07); }
+    .menu-nav > ul > li > a,
+    .menu-accordion {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 22px 0; font-size: 30px; font-weight: 700; color: #fff;
+      background: none; border: none; width: 100%; cursor: pointer;
+      text-align: left; font-family: inherit; transition: color .2s;
+    }
+    .menu-nav > ul > li > a:hover,
+    .menu-accordion:hover { color: var(--color-primary-light); }
+    .menu-accordion .chevron { transition: transform .3s var(--ease-out); width: 22px; height: 22px; }
+    .menu-accordion.expanded .chevron { transform: rotate(180deg); }
+    .sub-menu {
+      list-style: none; overflow: hidden; max-height: 0;
+      transition: max-height .35s var(--ease-out);
+    }
+    .sub-menu.open { max-height: 240px; }
+    .sub-menu li a {
+      display: block; padding: 11px 0 11px 28px;
+      font-size: 17px; color: rgba(255,255,255,0.55);
+      transition: color .2s;
+    }
+    .sub-menu li a:hover { color: #fff; }
+    .menu-bottom {
+      display: flex; gap: 28px;
+      border-top: 1px solid rgba(255,255,255,0.08); padding-top: 32px; margin-top: 16px;
+    }
+    .menu-bottom a { font-size: 13px; color: rgba(255,255,255,0.4); transition: color .2s; }
+    .menu-bottom a:hover { color: #fff; }
+
+    /* ===== HERO ===== */
+    #hero {
+      position: relative; height: 100vh; min-height: 620px;
+      display: flex; flex-direction: column; justify-content: center;
+      overflow: hidden;
+    }
+    .hero-bg { position: absolute; inset: 0; }
+    .hero-bg img { width: 100%; height: 100%; object-fit: cover; object-position: center; }
+    .hero-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(160deg, rgba(0,0,0,0.38) 0%, rgba(0,0,0,0.62) 100%);
+    }
+    .hero-content {
+      position: relative; z-index: 1;
+      padding: 0 80px; max-width: 1280px; margin: 0 auto; width: 100%;
+    }
+    .hero-eyebrow {
+      font-size: 12px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+      color: rgba(255,255,255,0.65); margin-bottom: 28px;
+    }
+    .hero-title {
+      font-size: 64px; font-weight: 800; color: #fff;
+      line-height: 1.08; letter-spacing: -0.025em;
+    }
+    .hero-title .line2 { display: block; margin-top: 4px; }
+    .rotating-word {
+      color: var(--color-primary-light);
+      display: inline-block; position: relative;
+    }
+    .rotating-word .word-inner { display: inline-block; }
+    @keyframes wordIn {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: none; }
+    }
+    .rotating-word.animating .word-inner {
+      animation: wordIn .45s var(--ease-out) both;
+    }
+
+    /* Hero pick card */
+    .hero-pick {
+      position: absolute; bottom: 0; left: 0; right: 0; z-index: 1;
+      padding: 0 80px 52px;
+    }
+    .hero-pick-card {
+      max-width: 520px;
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 6px; padding: 24px 28px;
+    }
+    .hero-pick-label {
+      display: block; font-size: 10px; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--color-accent); margin-bottom: 16px;
+    }
+    .hero-pick-row { display: flex; gap: 16px; align-items: flex-start; }
+    .hero-pick-thumb {
+      width: 60px; height: 60px; object-fit: cover; border-radius: 4px; flex-shrink: 0;
+    }
+    .hero-pick-info { flex: 1; min-width: 0; }
+    .hero-pick-cat {
+      font-size: 11px; color: rgba(255,255,255,0.55); display: block; margin-bottom: 5px;
+    }
+    .hero-pick-title {
+      font-size: 14px; font-weight: 700; color: #fff; line-height: 1.45;
+      margin-bottom: 14px; display: -webkit-box;
+      -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .hero-pick-btn {
+      font-size: 12px; padding: 7px 16px;
+      border-color: rgba(255,255,255,0.45); color: #fff;
+    }
+    .hero-pick-btn:hover { background: #fff; color: #000; border-color: #fff; }
+
+    /* ===== CATEGORIES ===== */
+    .section-categories { padding: 140px 0; }
+    .section-header { margin-bottom: 52px; }
+    .section-title { font-size: 40px; font-weight: 800; line-height: 1.18; letter-spacing: -0.02em; }
+
+    .card-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .cat-card {
+      position: relative; aspect-ratio: 4/5; overflow: hidden;
+      border-radius: 4px; cursor: pointer; display: block;
+    }
+    .cat-card img {
+      width: 100%; height: 100%; object-fit: cover;
+      transition: transform .65s var(--ease-out);
+    }
+    .cat-card:hover img { transform: scale(1.05); }
+    .cat-card::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(180deg, rgba(0,0,0,0) 30%, rgba(0,0,0,0.72) 100%);
+      transition: opacity .3s;
+    }
+    .cat-card:hover::after { opacity: 0.85; }
+    .cat-card-body {
+      position: absolute; inset: 0; z-index: 1;
+      display: flex; flex-direction: column; justify-content: flex-end; padding: 28px;
+    }
+    .cat-label {
+      font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase;
+      color: rgba(255,255,255,0.7); margin-bottom: 8px;
+    }
+    .cat-title {
+      font-size: 21px; font-weight: 800; color: #fff; line-height: 1.3; margin-bottom: 22px;
+    }
+    .cat-card .btn-circle { color: #fff; border-color: rgba(255,255,255,0.45); font-size: 16px; }
+    .cat-card:hover .btn-circle { background: #fff; color: #000; border-color: #fff; }
+
+    /* ===== ABOUT ===== */
+    .section-about { padding: 120px 0; background: var(--color-surface-muted); }
+    .about-inner {
+      display: flex; align-items: flex-end; justify-content: space-between; gap: 48px;
+    }
+    .about-title {
+      font-size: 48px; font-weight: 800; line-height: 1.12; letter-spacing: -0.025em;
+    }
+    .about-right { flex-shrink: 0; }
+
+    /* ===== POPULAR CAROUSEL ===== */
+    .section-popular { padding: 140px 0; overflow: hidden; }
+    .popular-header {
+      display: flex; align-items: flex-end; justify-content: space-between;
+      margin-bottom: 44px;
+    }
+    .carousel-controls { display: flex; gap: 8px; }
+    .carousel-controls .btn-circle { color: #000; }
+    .carousel-controls .btn-circle:hover { background: #000; color: #fff; }
+
+    .carousel-outer { overflow: hidden; padding-left: 80px; }
+    .carousel-track {
+      display: flex; gap: 20px;
+      cursor: grab; user-select: none; will-change: transform;
+      transition: transform .5s var(--ease-out);
+    }
+    .carousel-track.dragging { cursor: grabbing; transition: none; }
+    .carousel-card {
+      flex: 0 0 calc(25% - 15px); position: relative;
+      aspect-ratio: 4/5; overflow: hidden; border-radius: 4px; cursor: pointer;
+    }
+    .carousel-card img {
+      width: 100%; height: 100%; object-fit: cover;
+      transition: transform .6s var(--ease-out);
+    }
+    .carousel-card:hover img { transform: scale(1.04); }
+    .carousel-card::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(180deg, rgba(0,0,0,0) 40%, rgba(0,0,0,0.68) 100%);
+    }
+    .carousel-card-body {
+      position: absolute; bottom: 0; left: 0; right: 0; z-index: 1; padding: 22px;
+    }
+    .carousel-cat {
+      font-size: 10px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase;
+      color: rgba(255,255,255,0.6); margin-bottom: 6px;
+    }
+    .carousel-title { font-size: 15px; font-weight: 700; color: #fff; line-height: 1.4; }
+
+    /* ===== LATEST POSTS ===== */
+    .section-latest { padding: 140px 0; position: relative; overflow: hidden; }
+    .latest-bg-text {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      font-size: 200px; font-weight: 900; letter-spacing: -0.05em;
+      color: transparent; -webkit-text-stroke: 1px rgba(0,0,0,0.055);
+      white-space: nowrap; pointer-events: none; user-select: none; z-index: 0;
+    }
+    .latest-header {
+      position: relative; z-index: 1;
+      display: flex; align-items: flex-end; justify-content: space-between;
+      margin-bottom: 44px;
+    }
+    .latest-layout { position: relative; z-index: 1; display: flex; gap: 20px; align-items: flex-start; }
+    .latest-main-card {
+      flex: 0 0 calc(50% - 10px); aspect-ratio: 1/1;
+      position: relative; overflow: hidden; border-radius: 4px; cursor: pointer; display: block;
+    }
+    .latest-main-card img { width: 100%; height: 100%; object-fit: cover; transition: transform .65s var(--ease-out); }
+    .latest-main-card:hover img { transform: scale(1.04); }
+    .latest-main-card::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(180deg, rgba(0,0,0,0) 35%, rgba(0,0,0,0.7) 100%);
+    }
+    .latest-card-body {
+      position: absolute; bottom: 0; left: 0; right: 0; z-index: 1; padding: 28px;
+    }
+    .latest-cat {
+      font-size: 10px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase;
+      color: rgba(255,255,255,0.6); margin-bottom: 7px;
+    }
+    .latest-title { font-size: 22px; font-weight: 800; color: #fff; line-height: 1.3; margin-bottom: 8px; }
+    .latest-date { font-size: 12px; color: rgba(255,255,255,0.45); }
+
+    .latest-sub-grid {
+      flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+    }
+    .latest-sub-card {
+      aspect-ratio: 4/5; position: relative; overflow: hidden;
+      border-radius: 4px; cursor: pointer; display: block;
+    }
+    .latest-sub-card img { width: 100%; height: 100%; object-fit: cover; transition: transform .65s var(--ease-out); }
+    .latest-sub-card:hover img { transform: scale(1.04); }
+    .latest-sub-card::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(180deg, rgba(0,0,0,0) 40%, rgba(0,0,0,0.7) 100%);
+    }
+    .latest-sub-card .latest-card-body { padding: 18px; }
+    .latest-sub-card .latest-title { font-size: 14px; font-weight: 700; }
+
+    /* ===== NEWSLETTER ===== */
+    .section-newsletter { padding: 160px 0; text-align: center; position: relative; overflow: hidden; }
+    .newsletter-bg { position: absolute; inset: 0; background: #fff; }
+    .section-newsletter .container { position: relative; z-index: 1; }
+    .newsletter-title { font-size: 48px; font-weight: 800; line-height: 1.15; letter-spacing: -0.025em; margin-bottom: 18px; }
+    .newsletter-sub { font-size: 16px; color: var(--color-text-sub); margin-bottom: 48px; }
+    .newsletter-form { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .newsletter-input {
+      border: 1px solid rgba(0,0,0,0.2); border-radius: 999px;
+      padding: 12px 24px; font-size: 15px; width: 300px; max-width: 100%;
+      font-family: inherit; outline: none; background: rgba(255,255,255,0.7);
+      transition: border-color .2s, background .2s;
+    }
+    .newsletter-input:focus { border-color: var(--color-primary); background: #fff; }
+    .newsletter-form .btn-pill { padding: 12px 28px; font-size: 15px; }
+
+    /* ===== CLOSING ===== */
+    .section-closing {
+      position: relative; height: 68vh; min-height: 460px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .closing-bg { position: absolute; inset: 0; }
+    .closing-bg img { width: 100%; height: 100%; object-fit: cover; object-position: center 30%; }
+    .closing-overlay { position: absolute; inset: 0; background: rgba(15,23,42,0.58); }
+    .closing-content { position: relative; z-index: 1; text-align: center; padding: 0 24px; }
+    .closing-sub { font-size: 14px; color: rgba(255,255,255,0.65); letter-spacing: 0.04em; margin-bottom: 20px; }
+    .closing-title { font-size: 52px; font-weight: 800; color: #fff; letter-spacing: -0.025em; line-height: 1.1; margin-bottom: 44px; }
+
+    /* ===== FOOTER ===== */
+    footer { background: var(--color-surface-dark); padding: 72px 0 40px; }
+    .footer-top {
+      display: flex; justify-content: space-between; align-items: flex-start; gap: 64px;
+      padding-bottom: 56px; border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+    .footer-logo { font-size: 17px; font-weight: 800; color: #fff; letter-spacing: 0.06em; margin-bottom: 10px; }
+    .footer-brand p { font-size: 13px; color: rgba(255,255,255,0.35); }
+    .footer-nav-wrap { display: flex; gap: 64px; }
+    .footer-nav-group h4 {
+      font-size: 11px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase;
+      color: rgba(255,255,255,0.35); margin-bottom: 20px;
+    }
+    .footer-nav-group ul { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+    .footer-nav-group a { font-size: 14px; color: rgba(255,255,255,0.6); transition: color .2s; }
+    .footer-nav-group a:hover { color: #fff; }
+    .footer-social { display: flex; gap: 10px; }
+    .footer-social-link {
+      width: 40px; height: 40px; border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.12);
+      display: flex; align-items: center; justify-content: center;
+      color: rgba(255,255,255,0.5); transition: border-color .2s, color .2s;
+    }
+    .footer-social-link:hover { border-color: rgba(255,255,255,0.5); color: #fff; }
+    .footer-bottom {
+      display: flex; justify-content: space-between; align-items: center; padding-top: 32px;
+    }
+    .footer-copy { font-size: 12px; color: rgba(255,255,255,0.25); }
+    .footer-legal { display: flex; gap: 24px; }
+    .footer-legal a { font-size: 12px; color: rgba(255,255,255,0.25); transition: color .2s; }
+    .footer-legal a:hover { color: rgba(255,255,255,0.55); }
+
+    /* ===== SCROLL TO TOP ===== */
+    #scrollTop {
+      position: fixed; bottom: 32px; right: 32px; z-index: 50;
+      width: 48px; height: 48px; border-radius: 50%;
+      background: #fff; border: 1px solid rgba(0,0,0,0.12);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; cursor: pointer;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+      opacity: 0; transform: translateY(10px);
+      transition: opacity .3s ease, transform .3s ease, background .2s, color .2s;
+    }
+    #scrollTop.visible { opacity: 1; transform: none; }
+    #scrollTop:hover { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 1100px) {
+      .container { padding: 0 48px; }
+      #header, .hero-pick { padding-left: 48px; padding-right: 48px; }
+      .hero-content { padding: 0 48px; }
+      .hero-title { font-size: 52px; }
+      .carousel-outer { padding-left: 48px; }
+      .menu-inner { padding: 0 48px 40px; }
+      .carousel-card { flex: 0 0 calc(33% - 14px); }
+    }
+    @media (max-width: 768px) {
+      .container { padding: 0 24px !important; }
+      #header { padding: 0 24px; }
+      .hero-content { padding: 0 24px; }
+      .hero-pick { padding: 0 24px 36px; }
+      .hero-title { font-size: 38px; }
+      .section-categories, .section-popular, .section-latest { padding: 80px 0; }
+      .section-about { padding: 80px 0; }
+      .section-newsletter { padding: 100px 0; }
+      .section-title { font-size: 30px; }
+      .card-grid { grid-template-columns: 1fr; }
+      .about-inner { flex-direction: column; gap: 36px; align-items: flex-start; }
+      .about-title { font-size: 32px; }
+      .carousel-outer { padding-left: 24px; }
+      .carousel-card { flex: 0 0 calc(80% - 10px); }
+      .latest-layout { flex-direction: column; }
+      .latest-main-card { flex: none; width: 100%; aspect-ratio: 4/3; }
+      .latest-bg-text { font-size: 72px; }
+      .newsletter-title { font-size: 32px; }
+      .newsletter-form { flex-direction: column; align-items: center; }
+      .newsletter-input { width: 100%; max-width: 340px; }
+      .closing-title { font-size: 34px; }
+      .footer-top { flex-direction: column; gap: 40px; }
+      .footer-nav-wrap { flex-wrap: wrap; gap: 40px; }
+      .footer-bottom { flex-direction: column; gap: 16px; text-align: center; }
+      .footer-legal { justify-content: center; }
+      .menu-inner { padding: 0 24px 36px; }
+      .menu-nav > ul > li > a, .menu-accordion { font-size: 22px; padding: 18px 0; }
+      .latest-header { flex-direction: column; align-items: flex-start; gap: 16px; }
+      .popular-header { flex-direction: column; align-items: flex-start; gap: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<header id="header">
+  <div class="header-inner">
+    <a href="/" class="logo">DEV LOG</a>
+    <button class="hamburger" id="menuBtn" aria-label="메뉴 열기" aria-expanded="false">
+      <span></span>
+      <span></span>
+    </button>
+  </div>
+</header>
+
+<!-- ===== MENU OVERLAY ===== -->
+<div id="menuOverlay" class="menu-overlay" role="dialog" aria-modal="true" aria-label="내비게이션 메뉴">
+  <div class="menu-inner">
+    <div class="menu-top">
+      <span class="menu-logo">DEV LOG</span>
+      <button class="menu-close" id="menuClose" aria-label="메뉴 닫기">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <nav class="menu-nav">
+      <ul>
+        <li><a href="/about">소개</a></li>
+        <li>
+          <button class="menu-accordion" aria-expanded="false">
+            카테고리
+            <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+          <ul class="sub-menu" aria-hidden="true">
+            <li><a href="/categories/frontend">Frontend</a></li>
+            <li><a href="/categories/backend">Backend</a></li>
+            <li><a href="/categories/infra">Infra</a></li>
+          </ul>
+        </li>
+        <li><a href="/posts">전체 글</a></li>
+        <li><a href="/tags">태그</a></li>
+        <li><a href="/archive">아카이브</a></li>
+        <li><a href="/search">검색</a></li>
+      </ul>
+    </nav>
+    <div class="menu-bottom">
+      <a href="https://github.com" target="_blank" rel="noopener">GitHub</a>
+      <a href="/rss.xml">RSS</a>
+      <a href="/about">소개</a>
+    </div>
+  </div>
+</div>
+
+<!-- ===== HERO ===== -->
+<section id="hero">
+  <div class="hero-bg">
+    <img src="images/hero-developer-workspace.webp" alt="" loading="eager" fetchpriority="high">
+  </div>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <p class="hero-eyebrow">DEV LOG &mdash; 개발 블로그</p>
+    <h1 class="hero-title">
+      코드로 담아내는<br>
+      <span class="line2">
+        <span class="rotating-word"><span class="word-inner" id="rotatingWord">생각</span></span>의 공간
+      </span>
+    </h1>
+  </div>
+  <div class="hero-pick">
+    <div class="hero-pick-card">
+      <span class="hero-pick-label">&#10022; 최신 글 Pick</span>
+      <div class="hero-pick-row">
+        <img class="hero-pick-thumb" src="images/hero-latest-pick-react.webp" alt="React 렌더링 최적화">
+        <div class="hero-pick-info">
+          <span class="hero-pick-cat">Frontend</span>
+          <p class="hero-pick-title">React 렌더링 최적화: useMemo와 useCallback의 진짜 사용 시점</p>
+          <a href="/posts/react-rendering" class="btn-pill hero-pick-btn">읽기 &rarr;</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SECTION 1: CATEGORIES ===== -->
+<section class="section-categories">
+  <div class="container">
+    <div class="section-header reveal">
+      <p class="eyebrow">Categories</p>
+      <h2 class="section-title">탐색하고 싶은<br>주제를 골라보세요</h2>
+    </div>
+    <div class="card-grid">
+      <a href="/categories/frontend" class="cat-card reveal" style="transition-delay:.05s">
+        <img src="images/category-frontend.webp" alt="Frontend 카테고리">
+        <div class="cat-card-body">
+          <span class="cat-label">Frontend</span>
+          <h3 class="cat-title">React, TypeScript,<br>성능 최적화</h3>
+          <span class="btn-circle">&rarr;</span>
+        </div>
+      </a>
+      <a href="/categories/backend" class="cat-card reveal" style="transition-delay:.15s">
+        <img src="images/category-backend.webp" alt="Backend 카테고리">
+        <div class="cat-card-body">
+          <span class="cat-label">Backend</span>
+          <h3 class="cat-title">API 설계, 데이터베이스,<br>서버 아키텍처</h3>
+          <span class="btn-circle">&rarr;</span>
+        </div>
+      </a>
+      <a href="/categories/infra" class="cat-card reveal" style="transition-delay:.25s">
+        <img src="images/category-infra.webp" alt="Infra 카테고리">
+        <div class="cat-card-body">
+          <span class="cat-label">Infra</span>
+          <h3 class="cat-title">CI/CD, Docker,<br>클라우드 인프라</h3>
+          <span class="btn-circle">&rarr;</span>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SECTION 2: ABOUT ===== -->
+<section class="section-about">
+  <div class="container">
+    <div class="about-inner reveal">
+      <div class="about-left">
+        <p class="eyebrow">About</p>
+        <h2 class="about-title">안녕하세요, 저는<br>기록하는<br>개발자입니다</h2>
+      </div>
+      <div class="about-right">
+        <a href="/about" class="btn-pill">저에 대해 더 알아보기 &rarr;</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SECTION 3: POPULAR CAROUSEL ===== -->
+<section class="section-popular">
+  <div class="container">
+    <div class="popular-header reveal">
+      <div>
+        <p class="eyebrow">Popular Posts</p>
+        <h2 class="section-title">많이 읽은 글</h2>
+      </div>
+      <div class="carousel-controls">
+        <button class="btn-circle" id="carouselPrev" aria-label="이전">&larr;</button>
+        <button class="btn-circle" id="carouselNext" aria-label="다음">&rarr;</button>
+      </div>
+    </div>
+  </div>
+  <div class="carousel-outer">
+    <div class="carousel-track" id="carouselTrack">
+      <a href="/posts/react-rendering" class="carousel-card">
+        <img src="images/popular-react-rendering.webp" alt="React 렌더링 최적화" loading="lazy">
+        <div class="carousel-card-body">
+          <p class="carousel-cat">Frontend</p>
+          <h3 class="carousel-title">React 렌더링 최적화: useMemo와 useCallback의 진짜 사용 시점</h3>
+        </div>
+      </a>
+      <a href="/posts/typescript-generics" class="carousel-card">
+        <img src="images/popular-typescript-generics.webp" alt="타입스크립트 제네릭" loading="lazy">
+        <div class="carousel-card-body">
+          <p class="carousel-cat">Frontend</p>
+          <h3 class="carousel-title">타입스크립트 제네릭 완전 정복: 실전 패턴 5가지</h3>
+        </div>
+      </a>
+      <a href="/posts/api-optimization" class="carousel-card">
+        <img src="images/popular-api-optimization.webp" alt="느린 API 최적화" loading="lazy">
+        <div class="carousel-card-body">
+          <p class="carousel-cat">Backend</p>
+          <h3 class="carousel-title">느린 API를 10배 빠르게: 실제 최적화 기록</h3>
+        </div>
+      </a>
+      <a href="/posts/cicd-pipeline" class="carousel-card">
+        <img src="images/popular-cicd-pipeline.webp" alt="CI/CD 파이프라인" loading="lazy">
+        <div class="carousel-card-body">
+          <p class="carousel-cat">Infra</p>
+          <h3 class="carousel-title">GitHub Actions로 CI/CD 파이프라인 구축기</h3>
+        </div>
+      </a>
+      <a href="/posts/side-project-retrospective" class="carousel-card">
+        <img src="images/popular-side-project-retrospective.webp" alt="사이드 프로젝트 회고" loading="lazy">
+        <div class="carousel-card-body">
+          <p class="carousel-cat">회고</p>
+          <h3 class="carousel-title">사이드 프로젝트 1년 회고: 잘한 것과 아쉬운 것</h3>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SECTION 4: LATEST POSTS ===== -->
+<section class="section-latest">
+  <div class="latest-bg-text" aria-hidden="true">LATEST POSTS</div>
+  <div class="container">
+    <div class="latest-header reveal">
+      <div>
+        <p class="eyebrow">Latest Posts</p>
+        <h2 class="section-title">최근에 쓴 글</h2>
+      </div>
+      <a href="/posts" class="btn-pill">전체 글 보기 &rarr;</a>
+    </div>
+    <div class="latest-layout reveal">
+      <a href="/posts/deployment-automation" class="latest-main-card">
+        <img src="images/latest-deployment-automation.webp" alt="배포 자동화" loading="lazy">
+        <div class="latest-card-body">
+          <p class="latest-cat">Infra</p>
+          <h3 class="latest-title">배포 자동화 구축기: Terraform부터 ArgoCD까지</h3>
+          <p class="latest-date">2026. 09. 14</p>
+        </div>
+      </a>
+      <div class="latest-sub-grid">
+        <a href="/posts/api-optimization" class="latest-sub-card">
+          <img src="images/latest-api-optimization.webp" alt="느린 API 최적화" loading="lazy">
+          <div class="latest-card-body">
+            <p class="latest-cat">Backend</p>
+            <h3 class="latest-title">느린 API 최적화 실험 노트</h3>
+            <p class="latest-date">2026. 09. 10</p>
+          </div>
+        </a>
+        <a href="/posts/react-rendering-notes" class="latest-sub-card">
+          <img src="images/latest-react-rendering-notes.webp" alt="React 렌더링 노트" loading="lazy">
+          <div class="latest-card-body">
+            <p class="latest-cat">Frontend</p>
+            <h3 class="latest-title">React 렌더링 최적화 공부 노트</h3>
+            <p class="latest-date">2026. 09. 07</p>
+          </div>
+        </a>
+        <a href="/posts/typescript-generics" class="latest-sub-card">
+          <img src="images/latest-typescript-generics.webp" alt="타입스크립트 제네릭" loading="lazy">
+          <div class="latest-card-body">
+            <p class="latest-cat">Frontend</p>
+            <h3 class="latest-title">타입스크립트 제네릭 정리</h3>
+            <p class="latest-date">2026. 09. 03</p>
+          </div>
+        </a>
+        <a href="/posts/cicd-pipeline" class="latest-sub-card">
+          <img src="images/latest-cicd-pipeline.webp" alt="CI/CD 파이프라인" loading="lazy">
+          <div class="latest-card-body">
+            <p class="latest-cat">Infra</p>
+            <h3 class="latest-title">CI/CD 파이프라인 구축기</h3>
+            <p class="latest-date">2026. 08. 28</p>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SECTION 5: NEWSLETTER ===== -->
+<section class="section-newsletter" id="newsletterSection">
+  <div class="newsletter-bg" id="newsletterBg"></div>
+  <div class="container">
+    <div class="reveal">
+      <p class="eyebrow">뉴스레터</p>
+      <h2 class="newsletter-title">새 글이 올라오면<br>바로 알려드릴게요</h2>
+      <p class="newsletter-sub">스팸 없이, 새 글이 발행될 때만 연락드려요.</p>
+      <form class="newsletter-form" onsubmit="handleSubscribe(event)">
+        <input type="email" class="newsletter-input" placeholder="이메일 주소를 입력하세요" aria-label="이메일 주소" required>
+        <button type="submit" class="btn-pill">구독하기 &rarr;</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SECTION 6: CLOSING ===== -->
+<section class="section-closing">
+  <div class="closing-bg">
+    <img src="images/closing-night-workspace.webp" alt="" loading="lazy">
+  </div>
+  <div class="closing-overlay"></div>
+  <div class="closing-content reveal">
+    <p class="closing-sub">오늘도 무언가를 만들고 기록하는 중.</p>
+    <h2 class="closing-title">가장 최근에 쓴 글<br>읽어보시겠어요?</h2>
+    <a href="/posts" class="btn-pill btn-pill-white">전체 글 보러가기 &rarr;</a>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <div class="container">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <div class="footer-logo">DEV LOG</div>
+        <p>생각을 코드로, 코드를 기록으로.</p>
+      </div>
+      <div class="footer-nav-wrap">
+        <div class="footer-nav-group">
+          <h4>탐색</h4>
+          <ul>
+            <li><a href="/posts">전체 글</a></li>
+            <li><a href="/categories">카테고리</a></li>
+            <li><a href="/tags">태그</a></li>
+            <li><a href="/archive">아카이브</a></li>
+          </ul>
+        </div>
+        <div class="footer-nav-group">
+          <h4>더 보기</h4>
+          <ul>
+            <li><a href="/about">소개</a></li>
+            <li><a href="/search">검색</a></li>
+            <li><a href="/rss.xml">RSS</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-social">
+        <a href="https://github.com" target="_blank" rel="noopener" class="footer-social-link" aria-label="GitHub">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
+          </svg>
+        </a>
+        <a href="https://twitter.com" target="_blank" rel="noopener" class="footer-social-link" aria-label="X (Twitter)">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+          </svg>
+        </a>
+        <a href="/rss.xml" class="footer-social-link" aria-label="RSS 피드">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M6.18 15.64a2.18 2.18 0 0 1 2.18 2.18C8.36 19.01 7.38 20 6.18 20C4.98 20 4 19.01 4 17.82a2.18 2.18 0 0 1 2.18-2.18M4 4.44A15.56 15.56 0 0 1 19.56 20h-2.83A12.73 12.73 0 0 0 4 7.27V4.44m0 5.66a9.9 9.9 0 0 1 9.9 9.9h-2.83A7.07 7.07 0 0 0 4 12.93V10.1z"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p class="footer-copy">&copy; 2026 DEV LOG. All rights reserved.</p>
+      <div class="footer-legal">
+        <a href="/privacy">개인정보처리방침</a>
+        <a href="/sitemap.xml">사이트맵</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- ===== SCROLL TO TOP ===== -->
+<button id="scrollTop" aria-label="맨 위로 이동">&#8593;</button>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ── HEADER ── */
+  const header = document.getElementById('header');
+  let lastY = 0;
+
+  function onScroll() {
+    const y = window.scrollY;
+    header.classList.toggle('scrolled', y > 60);
+    header.classList.toggle('hidden', y > lastY && y > 220);
+    lastY = y;
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  /* ── MENU ── */
+  const menuBtn     = document.getElementById('menuBtn');
+  const menuClose   = document.getElementById('menuClose');
+  const menuOverlay = document.getElementById('menuOverlay');
+
+  function openMenu() {
+    menuOverlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    menuBtn.setAttribute('aria-expanded', 'true');
+  }
+  function closeMenu() {
+    menuOverlay.classList.remove('open');
+    document.body.style.overflow = '';
+    menuBtn.setAttribute('aria-expanded', 'false');
+  }
+
+  menuBtn.addEventListener('click', openMenu);
+  menuClose.addEventListener('click', closeMenu);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMenu(); });
+
+  /* Accordion */
+  document.querySelectorAll('.menu-accordion').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const sub = btn.nextElementSibling;
+      const open = btn.classList.toggle('expanded');
+      btn.setAttribute('aria-expanded', open);
+      sub.classList.toggle('open', open);
+      sub.setAttribute('aria-hidden', !open);
+    });
+  });
+
+  /* ── HERO TEXT ROTATION ── */
+  const words   = ['생각', '배움', '경험', '성장', '기록'];
+  let wordIdx   = 0;
+  const wordEl  = document.getElementById('rotatingWord');
+  const wrapper = wordEl.closest('.rotating-word');
+
+  setInterval(() => {
+    wordIdx = (wordIdx + 1) % words.length;
+    wrapper.classList.remove('animating');
+    void wrapper.offsetWidth; // force reflow
+    wordEl.textContent = words[wordIdx];
+    wrapper.classList.add('animating');
+  }, 2800);
+
+  /* ── SCROLL REVEAL ── */
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        io.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+  /* ── CAROUSEL ── */
+  const track    = document.getElementById('carouselTrack');
+  const prevBtn  = document.getElementById('carouselPrev');
+  const nextBtn  = document.getElementById('carouselNext');
+  let translate  = 0;
+
+  function cardW() {
+    const c = track.querySelector('.carousel-card');
+    return c.getBoundingClientRect().width + 20; // 20 = gap
+  }
+  function clampTranslate(val) {
+    const max = -(track.scrollWidth - track.parentElement.offsetWidth + 80);
+    return Math.min(0, Math.max(max, val));
+  }
+  function setTranslate(val, animate) {
+    translate = clampTranslate(val);
+    track.style.transition = animate ? 'transform .5s cubic-bezier(0.16,1,0.3,1)' : 'none';
+    track.style.transform  = 'translateX(' + translate + 'px)';
+  }
+
+  prevBtn.addEventListener('click', () => setTranslate(translate + cardW(), true));
+  nextBtn.addEventListener('click', () => setTranslate(translate - cardW(), true));
+
+  /* Drag */
+  let dragging = false, startX = 0, startT = 0;
+
+  track.addEventListener('mousedown', e => {
+    dragging = true; startX = e.clientX; startT = translate;
+    track.classList.add('dragging');
+  });
+  window.addEventListener('mousemove', e => {
+    if (!dragging) return;
+    setTranslate(startT + (e.clientX - startX), false);
+  });
+  window.addEventListener('mouseup', e => {
+    if (!dragging) return;
+    dragging = false;
+    track.classList.remove('dragging');
+    const dx = e.clientX - startX;
+    if (Math.abs(dx) > 60) setTranslate(translate, true);
+    else setTranslate(startT, true);
+  });
+
+  /* Touch */
+  track.addEventListener('touchstart', e => {
+    startX = e.touches[0].clientX; startT = translate;
+    track.style.transition = 'none';
+  }, { passive: true });
+  track.addEventListener('touchmove', e => {
+    setTranslate(startT + (e.touches[0].clientX - startX), false);
+  }, { passive: true });
+  track.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - startX;
+    if (Math.abs(dx) > 60) setTranslate(translate, true);
+    else setTranslate(startT, true);
+  });
+
+  /* ── SCROLL-LINKED NEWSLETTER GRADIENT ── */
+  const newsletterSection = document.getElementById('newsletterSection');
+  const newsletterBg      = document.getElementById('newsletterBg');
+
+  function updateGradient() {
+    const rect = newsletterSection.getBoundingClientRect();
+    const wh   = window.innerHeight;
+    // 0 when section top is at bottom of viewport, 1 when section top is at top
+    const progress = Math.max(0, Math.min(1, (wh - rect.top) / (wh + rect.height)));
+
+    // Interpolate start color: white (255,255,255) → blue (169,193,245)
+    const r = Math.round(255 - (255 - 169) * progress);
+    const g = Math.round(255 - (255 - 193) * progress);
+    const b = Math.round(255 - (255 - 245) * progress);
+    newsletterBg.style.background =
+      'linear-gradient(180deg, rgb(' + r + ',' + g + ',' + b + ') 0%, #A9C1F5 100%)';
+  }
+
+  window.addEventListener('scroll', updateGradient, { passive: true });
+  updateGradient();
+
+  /* ── SCROLL TO TOP ── */
+  const scrollTopBtn = document.getElementById('scrollTop');
+
+  window.addEventListener('scroll', () => {
+    scrollTopBtn.classList.toggle('visible', window.scrollY > 400);
+  }, { passive: true });
+
+  scrollTopBtn.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  /* ── NEWSLETTER FORM ── */
+  window.handleSubscribe = function (e) {
+    e.preventDefault();
+    const input = e.target.querySelector('input[type="email"]');
+    const btn   = e.target.querySelector('button[type="submit"]');
+    btn.textContent = '구독 완료!';
+    btn.disabled = true;
+    input.value = '';
+    setTimeout(() => { btn.textContent = '구독하기 →'; btn.disabled = false; }, 3000);
+  };
+})();
+</script>
+</body>
+</html>

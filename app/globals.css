@@ -1,0 +1,192 @@
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css");
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #ffffff;
+  --color-text: #000000;
+  --color-text-sub: #707070;
+  --color-primary: #1e3a8a;
+  --color-primary-light: #4f7cff;
+  --color-accent: #22c55e;
+  --color-surface-dark: #0f172a;
+  --color-surface-muted: #f5f6f8;
+
+  --font-sans: "Pretendard", -apple-system, BlinkMacSystemFont, sans-serif;
+
+  --ease-out-strong: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --breakpoint-lg: 1100px;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  overflow-x: hidden;
+  line-height: 1.6;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+@layer components {
+  .container-blog {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+  @media (min-width: 768px) {
+    .container-blog {
+      padding: 0 48px;
+    }
+  }
+  @media (min-width: 1100px) {
+    .container-blog {
+      padding: 0 80px;
+    }
+  }
+
+  .btn-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid #000;
+    border-radius: 999px;
+    padding: 11px 22px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    background: transparent;
+    color: #000;
+    transition:
+      background 0.2s ease,
+      color 0.2s ease,
+      border-color 0.2s ease;
+    white-space: nowrap;
+  }
+  .btn-pill:hover {
+    background: #000;
+    color: #fff;
+  }
+  .btn-pill-white {
+    border-color: rgba(255, 255, 255, 0.6);
+    color: #fff;
+  }
+  .btn-pill-white:hover {
+    background: #fff;
+    color: #000;
+    border-color: #fff;
+  }
+
+  .btn-circle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 1px solid currentColor;
+    font-size: 18px;
+    cursor: pointer;
+    background: transparent;
+    transition:
+      background 0.2s ease,
+      color 0.2s ease;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+
+  .eyebrow {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-text-sub);
+    margin-bottom: 16px;
+  }
+}
+
+@keyframes wordIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.prose-blog {
+  font-size: 16px;
+  color: var(--color-text);
+}
+.prose-blog h2 {
+  font-size: 24px;
+  font-weight: 800;
+  margin-top: 2.5em;
+  margin-bottom: 0.8em;
+  scroll-margin-top: 100px;
+}
+.prose-blog h3 {
+  font-size: 20px;
+  font-weight: 700;
+  margin-top: 2em;
+  margin-bottom: 0.6em;
+  scroll-margin-top: 100px;
+}
+.prose-blog p {
+  margin-bottom: 1.2em;
+}
+.prose-blog ul,
+.prose-blog ol {
+  margin: 0 0 1.2em 1.4em;
+}
+.prose-blog li {
+  margin-bottom: 0.4em;
+}
+.prose-blog a {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+.prose-blog code {
+  background: var(--color-surface-muted);
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+.prose-blog pre {
+  background: var(--color-surface-dark);
+  color: #e2e8f0;
+  padding: 20px;
+  border-radius: 6px;
+  overflow-x: auto;
+  margin-bottom: 1.5em;
+}
+.prose-blog pre code {
+  background: transparent;
+  padding: 0;
+  font-size: 13.5px;
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition:
+    opacity 0.55s var(--ease-out-strong),
+    transform 0.55s var(--ease-out-strong);
+}
+.reveal.visible {
+  opacity: 1;
+  transform: none;
+}
