@@ -29,15 +29,7 @@ export default function Header() {
         scrolled ? "bg-white/96 backdrop-blur-md shadow-[0_1px_0_rgba(0,0,0,0.08)]" : ""
       } ${hidden ? "-translate-y-full" : ""}`}
     >
-      <div className="flex items-center justify-between h-[72px]">
-        <Link
-          href="/"
-          className={`text-[17px] font-extrabold tracking-[0.06em] transition-colors ${
-            scrolled ? "text-black" : "text-white"
-          }`}
-        >
-          DEV LOG
-        </Link>
+      <div className="flex items-center gap-4 h-[72px]">
         <button
           type="button"
           onClick={toggle}
@@ -52,6 +44,14 @@ export default function Header() {
             className={`block h-[1.5px] rounded-sm transition-colors ${scrolled ? "bg-black" : "bg-white"}`}
           />
         </button>
+        <Link
+          href="/"
+          className={`text-[17px] font-extrabold tracking-[0.06em] transition-colors ${
+            scrolled ? "text-black" : "text-white"
+          }`}
+        >
+          DEV LOG
+        </Link>
       </div>
     </header>
   );
