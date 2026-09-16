@@ -46,7 +46,6 @@ export default function PostForm({ mode, post }: { mode: "create" | "edit"; post
   const router = useRouter();
   const adminFetch = useAdminFetch();
   const [values, setValues] = useState<PostFormValues>(toFormValues(post));
-  const [slugTouched, setSlugTouched] = useState(mode === "edit");
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -152,7 +151,7 @@ export default function PostForm({ mode, post }: { mode: "create" | "edit"; post
             setValues((v) => ({
               ...v,
               title,
-              slug: mode === "create" && !slugTouched ? slugify(title) : v.slug,
+              slug: mode === "create" ? slugify(title) : v.slug,
             }));
           }}
         />
@@ -160,18 +159,13 @@ export default function PostForm({ mode, post }: { mode: "create" | "edit"; post
 
       <div>
         <label className={labelClass} htmlFor="slug">
-          Slug (URL) {mode === "edit" && <span className="font-normal text-text-sub">— 생성 후에는 변경할 수 없습니다</span>}
+          Slug (URL) <span className="font-normal text-text-sub">— 제목에서 자동 생성됩니다</span>
         </label>
         <input
           id="slug"
-          required
-          disabled={mode === "edit"}
+          disabled
           className={`${inputClass} disabled:bg-surface-muted disabled:text-text-sub`}
           value={values.slug}
-          onChange={(e) => {
-            setSlugTouched(true);
-            setValues((v) => ({ ...v, slug: slugify(e.target.value) }));
-          }}
         />
       </div>
 

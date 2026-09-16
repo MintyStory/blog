@@ -32,7 +32,6 @@ export default function CategoryForm({ mode, category }: { mode: "create" | "edi
   const router = useRouter();
   const adminFetch = useAdminFetch();
   const [values, setValues] = useState<CategoryFormValues>(toFormValues(category));
-  const [slugTouched, setSlugTouched] = useState(mode === "edit");
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -108,7 +107,7 @@ export default function CategoryForm({ mode, category }: { mode: "create" | "edi
             setValues((v) => ({
               ...v,
               label,
-              slug: mode === "create" && !slugTouched ? slugify(label) : v.slug,
+              slug: mode === "create" ? slugify(label) : v.slug,
             }));
           }}
         />
@@ -116,18 +115,13 @@ export default function CategoryForm({ mode, category }: { mode: "create" | "edi
 
       <div>
         <label className={labelClass} htmlFor="slug">
-          Slug (URL) {mode === "edit" && <span className="font-normal text-text-sub">— 생성 후에는 변경할 수 없습니다</span>}
+          Slug (URL) <span className="font-normal text-text-sub">— 이름에서 자동 생성됩니다</span>
         </label>
         <input
           id="slug"
-          required
-          disabled={mode === "edit"}
+          disabled
           className={`${inputClass} disabled:bg-surface-muted disabled:text-text-sub`}
           value={values.slug}
-          onChange={(e) => {
-            setSlugTouched(true);
-            setValues((v) => ({ ...v, slug: slugify(e.target.value) }));
-          }}
         />
       </div>
 
