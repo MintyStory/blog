@@ -3,12 +3,14 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import LoginButton from "@/components/auth/LoginButton";
+import { useAuth } from "@/components/providers/AuthProvider";
 import { useSidebar } from "@/components/providers/SidebarProvider";
 
 const SIDEBAR_WIDTH = "min(380px, 85vw)";
 
 export default function Sidebar() {
   const { open, close } = useSidebar();
+  const { isAdmin } = useAuth();
   const [categoryOpen, setCategoryOpen] = useState(false);
 
   useEffect(() => {
@@ -112,6 +114,15 @@ export default function Sidebar() {
       </nav>
 
       <div className="px-6 pb-8 pt-6 border-t border-white/8 shrink-0 space-y-4">
+        {isAdmin ? (
+          <Link
+            href="/admin"
+            onClick={close}
+            className="block text-xs font-bold text-primary-light hover:text-white transition-colors"
+          >
+            관리자 대시보드
+          </Link>
+        ) : null}
         <LoginButton />
         <div className="flex gap-5">
           <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="text-xs text-white/65 hover:text-white transition-colors">
