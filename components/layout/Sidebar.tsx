@@ -33,7 +33,9 @@ export default function Sidebar() {
       }`}
     >
       <div className="flex items-center justify-between h-[72px] px-6 border-b border-white/8 shrink-0">
-        <span className="text-[17px] font-extrabold text-white tracking-[0.06em]">DEV LOG</span>
+        <Link href="/" onClick={close} className="text-[17px] font-extrabold text-white tracking-[0.06em]">
+          DEV LOG
+        </Link>
         <button
           type="button"
           onClick={close}
