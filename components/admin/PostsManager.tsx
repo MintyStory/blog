@@ -46,14 +46,15 @@ export default function PostsManager() {
               <th className="py-3 pr-4 font-medium">카테고리</th>
               <th className="py-3 pr-4 font-medium">날짜</th>
               <th className="py-3 pr-4 font-medium">상태</th>
+              <th className="py-3 pr-4 font-medium" />
             </tr>
           </thead>
           <tbody>
             {posts.map((post) => (
               <tr key={post.slug} className="relative border-b border-black/8 hover:bg-black/3">
-                <td className="py-3 pr-4 font-medium">
+                <td className="py-3 pr-4 font-medium max-w-xs truncate">
                   <Link href={`/admin/posts/${post.slug}/edit`} className="absolute inset-0" aria-label={`${post.title} 수정`} />
-                  <span className="block max-w-xs truncate">{post.title}</span>
+                  {post.title}
                 </td>
                 <td className="py-3 pr-4 text-text-sub">{post.categoryLabel}</td>
                 <td className="py-3 pr-4 text-text-sub">{post.date.replaceAll("-", ". ")}</td>
@@ -66,11 +67,23 @@ export default function PostsManager() {
                     {post.status === "published" ? "발행됨" : "초안"}
                   </span>
                 </td>
+                <td className="py-3 pr-4 text-right">
+                  {post.status === "published" && (
+                    <Link
+                      href={`/posts/${post.slug}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="relative z-10 text-primary hover:underline"
+                    >
+                      보기 ↗
+                    </Link>
+                  )}
+                </td>
               </tr>
             ))}
             {posts.length === 0 && (
               <tr>
-                <td colSpan={4} className="py-8 text-center text-text-sub">
+                <td colSpan={5} className="py-8 text-center text-text-sub">
                   아직 작성된 글이 없습니다.
                 </td>
               </tr>
