@@ -45,25 +45,22 @@ export default function CategoriesManager() {
               <th className="py-3 pr-4 font-medium">이름</th>
               <th className="py-3 pr-4 font-medium">Slug</th>
               <th className="py-3 pr-4 font-medium">설명</th>
-              <th className="py-3 pr-4 font-medium" />
             </tr>
           </thead>
           <tbody>
             {categories.map((cat) => (
-              <tr key={cat.slug} className="border-b border-black/8">
-                <td className="py-3 pr-4 font-medium">{cat.label}</td>
+              <tr key={cat.slug} className="relative border-b border-black/8 hover:bg-black/3">
+                <td className="py-3 pr-4 font-medium">
+                  <Link href={`/admin/categories/${cat.slug}/edit`} className="absolute inset-0" aria-label={`${cat.label} 수정`} />
+                  {cat.label}
+                </td>
                 <td className="py-3 pr-4 text-text-sub">{cat.slug}</td>
                 <td className="py-3 pr-4 text-text-sub max-w-xs truncate">{cat.description}</td>
-                <td className="py-3 pr-4 text-right">
-                  <Link href={`/admin/categories/${cat.slug}/edit`} className="text-primary hover:underline">
-                    수정
-                  </Link>
-                </td>
               </tr>
             ))}
             {categories.length === 0 && (
               <tr>
-                <td colSpan={4} className="py-8 text-center text-text-sub">
+                <td colSpan={3} className="py-8 text-center text-text-sub">
                   아직 등록된 카테고리가 없습니다.
                 </td>
               </tr>
