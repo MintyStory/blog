@@ -2,9 +2,11 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { categories, getCategoryMeta } from "@/data/categories";
-import { getPostsByCategory } from "@/data/posts";
+import { getPostsByCategory } from "@/lib/posts";
 import { getViewCounts } from "@/lib/viewCounts";
 import PostListView from "@/components/post/PostListView";
+
+export const dynamic = "force-dynamic";
 
 export function generateStaticParams() {
   return categories.map((c) => ({ category: c.slug }));
@@ -21,7 +23,7 @@ export default async function CategoryDetailPage({ params }: { params: Promise<{
   const meta = getCategoryMeta(category);
   if (!meta) notFound();
 
-  const categoryPosts = getPostsByCategory(meta.slug);
+  const categoryPosts = await getPostsByCategory(meta.slug);
   const viewCounts = await getViewCounts(categoryPosts.map((p) => p.slug));
 
   return (

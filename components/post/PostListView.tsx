@@ -1,8 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import type { Post } from "@/data/posts";
-import { sortPosts } from "@/data/posts";
+import type { Post } from "@/types/post";
+import { sortPosts } from "@/lib/postSort";
 import PostCard from "@/components/cards/PostCard";
 import Pagination from "@/components/ui/Pagination";
 import SortToggle, { type SortOption } from "@/components/ui/SortToggle";

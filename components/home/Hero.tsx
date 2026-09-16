@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import HeroRotatingWord from "./HeroRotatingWord";
-import type { Post } from "@/data/posts";
+import type { Post } from "@/types/post";
 
 export default function Hero({ pick }: { pick: Post }) {
   return (

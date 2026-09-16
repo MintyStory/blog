@@ -1,4 +1,4 @@
-import type { Post } from "@/data/posts";
+import type { Post } from "@/types/post";
 import ImageOverlayCard from "./ImageOverlayCard";
 
 export default function PostCard({ post, viewCount }: { post: Post; viewCount?: number }) {

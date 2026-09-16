@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project state
 
-Next.js (App Router, TypeScript, Tailwind CSS v4) app. UI is fully built out across all user-facing routes from `sitemap.md` (admin excluded except a view-count dashboard, see below) using dummy content data — no CMS/backend for post content. Two features ARE wired to a real backend: Google sign-in and per-post view counts, both via Firebase (Auth + Firestore). `DESIGN.md` is the design-system spec this UI implements; `sitemap.md` is the original full feature/route map (its Firebase/Next.js/Vercel stack section reflects what's now implemented, not still-pending plans).
+Next.js (App Router, TypeScript, Tailwind CSS v4) app. UI is fully built out across all user-facing routes from `sitemap.md`. Post content is a real Firestore-backed CMS (not dummy data) — Google sign-in, per-post view counts, and full post CRUD (create/edit/delete, draft/published status) all run against Firebase (Auth + Firestore). Admin is scoped to a view-count dashboard (`/admin`) and post management (`/admin/posts/**`) — the rest of `sitemap.md`'s admin surface (media library, SEO settings, comment moderation, etc.) is out of scope. `DESIGN.md` is the design-system spec this UI implements; `sitemap.md` is the original full feature/route map (its Firebase/Next.js/Vercel stack section reflects what's now implemented, not still-pending plans).
 
 ## Commands
 
@@ -27,24 +27,36 @@ To enable them:
 4. 프로젝트 설정 → 일반 → 내 앱에서 웹 앱 등록, `NEXT_PUBLIC_FIREBASE_*` 값을 `.env.local`에 복사 (`.env.local.example` 참고).
 5. 프로젝트 설정 → 서비스 계정 → 새 비공개 키 생성, `FIREBASE_ADMIN_*` 값을 `.env.local`에 채움.
 6. `firestore.rules`를 Firebase 콘솔 Rules 탭에 붙여넣거나 `firebase deploy --only firestore:rules`로 배포.
-7. 앱에서 Google로 한 번 로그인 → Firestore에 `users/{uid}` 문서 자동 생성됨 → 콘솔에서 그 문서의 `isAdmin` 필드를 수동으로 `true`로 변경 (최초 관리자 지정은 의도적으로 코드로 자동화하지 않음) → `/admin` 접근 가능.
+7. 앱에서 Google로 한 번 로그인 → Firestore에 `users/{uid}` 문서 자동 생성됨 → 콘솔에서 그 문서의 `isAdmin` 필드를 수동으로 `true`로 변경 (최초 관리자 지정은 의도적으로 코드로 자동화하지 않음) → `/admin`, `/admin/posts` 접근 가능.
+8. `npm run seed:posts` — `data/seedPosts.ts`의 더미 글 12개를 Firestore `posts` 컬렉션에 1회성으로 채워 넣는다 (이미 존재하는 slug는 건너뜀). 새 Firebase 프로젝트를 막 연결했을 때 콘텐츠가 비어있지 않게 하려는 용도.
 
 ## Architecture
 
-### Content vs. real data
+### Content: Firestore-backed, not dummy data
 
-- All post/category/tag content is static TypeScript data in `data/posts.ts`, `data/categories.ts`, `data/tags.ts` — no CMS. `data/posts.ts` also exports the query helpers every route uses (`getPostBySlug`, `getPostsByCategory`, `getPostsByTag`, `getRelatedPosts`, `getAdjacentPosts`, `sortPosts`) — reuse these rather than filtering `posts` inline.
-- View counts are the one piece of per-post state that's real: stored in Firestore `postViews/{slug}`, incremented only via `POST /api/views/[slug]` (Admin SDK; client writes are blocked by `firestore.rules`), and read server-side per request via `lib/viewCounts.ts` (`getViewCount`, `getViewCounts`, `getAllViewCounts`) — so pages using it can't be fully static even though their content is.
+- Posts live in Firestore `posts/{slug}` (doc id = slug), shaped by `types/post.ts#Post`. `lib/posts.ts` (server-only, imports `firebase-admin` — never import it from a client component) is the single data-access layer: `getAllPosts({includeDrafts})`, `getPostBySlug(slug, {includeDrafts})`, `getPostsByCategory`, `getPostsByTag`, `getRelatedPosts`, `getAdjacentPosts`, `getAllTags`, plus the write functions `createPost`/`updatePost`/`deletePost` used only by the admin API routes. If `firebase-admin` isn't configured, every read function transparently falls back to `data/seedPosts.ts` (filtered to `status: "published"` unless `includeDrafts` is set) so the app still renders with content in a Firebase-less dev environment.
+- `categories` (3 fixed categories with cover images) is still plain static data in `data/categories.ts` — not part of the CMS, not editable via `/admin`.
+- Client components can't reach `lib/posts.ts` directly (server-only). The `/search` page fetches the public `GET /api/posts` route instead (published posts only); the admin post list/editor fetch the token-gated `/api/admin/posts` routes via `hooks/useAdminFetch.ts`.
+- View counts remain the other piece of real per-post state: stored in Firestore `postViews/{slug}`, incremented only via `POST /api/views/[slug]` (Admin SDK; client writes are blocked by `firestore.rules`), read server-side via `lib/viewCounts.ts` (`getViewCount`, `getViewCounts`, `getAllViewCounts`).
+- Every route that reads posts/views sets `export const dynamic = "force-dynamic"` — content is editable at runtime via `/admin`, so these pages must not be statically cached.
+- **Known trap**: dynamic route params (`[slug]`, `[tag]`) arrive percent-encoded when the slug/tag contains non-ASCII (Korean titles produce Korean slugs). Every place that reads `params.slug`/`params.tag` must `decodeURIComponent` it before using it as a Firestore doc id or comparing it — `app/posts/[slug]/page.tsx`, `app/tags/[tag]/page.tsx`, `app/api/views/[slug]/route.ts`, and `app/api/admin/posts/[slug]/route.ts` all do this. Skipping it silently 404s (this shipped broken once already — see git history).
 
 ### Firebase split: client vs. admin
 
 - `lib/firebase/client.ts` — browser SDK (Auth, Firestore), used by client components. Exports `isFirebaseConfigured`; everything using it must handle the not-configured case rather than assuming `auth`/`db` are non-null.
 - `lib/firebase/admin.ts` — `firebase-admin`, server-only (Route Handlers / Server Components). Never import this from a client component. Exports `isFirebaseAdminConfigured` with the same no-op-when-missing contract.
 - Auth state lives in `components/providers/AuthProvider.tsx` (`useAuth()`: `user`, `isAdmin`, `loading`, `firebaseReady`). `isAdmin` is derived (`Boolean(user) && docIsAdmin`), not stored as its own reset-on-logout state — see the comment there if touching it; React's `set-state-in-effect` lint rule is why it's structured that way.
+- `loading` intentionally stays `true` until *both* Firebase Auth resolves *and* (if a user is signed in) the `users/{uid}` Firestore doc's first snapshot arrives — `setUser` and the admin-doc-loading flag are set inside the *same* `onAuthStateChanged` callback for that reason. Splitting them into separate effects (one keyed on auth state, one keyed on `user`) reintroduces a real race: on the render where `user` first becomes non-null, `loading` can momentarily read `false` before the Firestore listener has attached, so `AdminGuard` redirects an actual admin away before their `isAdmin` doc value ever arrives. Hit this once already — keep the single-callback structure if you touch this file.
 
 ### Admin dashboard security model
 
-`components/admin/AdminGuard.tsx` is a **UX-only** redirect gate (checks `AuthProvider`'s `isAdmin`) — it does not protect data. The actual authorization boundary is `app/api/admin/views/route.ts`, which verifies a Firebase ID token server-side and checks the `users/{uid}.isAdmin` Firestore flag itself before returning data via the Admin SDK (which otherwise bypasses `firestore.rules` entirely). If you add another admin-only data source, follow the same pattern — token-verified Route Handler, not a client-side-gated Server Component — rather than trusting `AdminGuard` alone.
+`components/admin/AdminGuard.tsx` is a **UX-only** redirect gate (checks `AuthProvider`'s `isAdmin`) — it does not protect data. The actual authorization boundary is `lib/requireAdmin.ts#requireAdmin`, used by every `app/api/admin/**` Route Handler: it verifies a Firebase ID token server-side and checks the `users/{uid}.isAdmin` Firestore flag itself before doing anything via the Admin SDK (which otherwise bypasses `firestore.rules` entirely). If you add another admin-only data source or mutation, call `requireAdmin` in its Route Handler — never rely on `AdminGuard` alone, and never fetch admin-only data (including draft post content) in a Server Component that isn't itself gated this way, since Server Component output ships in the initial HTML regardless of client-side redirects.
+
+### Post CRUD (admin)
+
+- `app/admin/posts/page.tsx` (list), `.../new/page.tsx` (create), `.../[slug]/edit/page.tsx` (edit) are all `AdminGuard`-wrapped, but the actual data fetching is done by client components (`PostsManager`, `PostEditor`) calling the token-gated `/api/admin/posts` routes via `useAdminFetch` — this is deliberate: a draft post's content must never appear in a Server Component's rendered HTML for a non-admin request, so even the edit page's initial load goes through the authenticated API rather than `getPostBySlug` directly.
+- `components/admin/PostForm.tsx` is shared by create and edit (`mode` prop); `slug` is editable only in create mode (immutable afterward, since it's the Firestore doc id) and auto-derived from the title via `lib/slugify.ts` until the user edits it manually.
+- Cover images are picked from `data/availableImages.ts` (existing `public/images/*.webp` assets) rather than uploaded — there's no Firebase Storage integration yet. Add new files there (and to `public/images/`) before they can be selected.
 
 ### Sidebar (not the original overlay menu)
 

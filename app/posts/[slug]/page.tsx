@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { posts, getPostBySlug, getRelatedPosts, getAdjacentPosts } from "@/data/posts";
+import { getPostBySlug, getRelatedPosts, getAdjacentPosts } from "@/lib/posts";
 import { getViewCount, getViewCounts } from "@/lib/viewCounts";
 import { extractToc } from "@/lib/markdown";
 import Breadcrumb from "@/components/ui/Breadcrumb";
@@ -14,26 +14,25 @@ import LikeShareButtons from "@/components/post/LikeShareButtons";
 import CommentsSection from "@/components/post/CommentsSection";
 import ViewCounter from "@/components/post/ViewCounter";
 
-export function generateStaticParams() {
-  return posts.map((p) => ({ slug: p.slug }));
-}
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
-  const { slug } = await params;
-  const post = getPostBySlug(slug);
+  const { slug: rawSlug } = await params;
+  const post = await getPostBySlug(decodeURIComponent(rawSlug));
   if (!post) return {};
   return { title: `${post.title} — DEV LOG`, description: post.excerpt };
 }
 
 export default async function PostDetailPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
-  const post = getPostBySlug(slug);
+  const { slug: rawSlug } = await params;
+  const slug = decodeURIComponent(rawSlug);
+  const post = await getPostBySlug(slug);
   if (!post) notFound();
 
   const [viewCount, related, adjacent] = await Promise.all([
     getViewCount(post.slug),
-    Promise.resolve(getRelatedPosts(post)),
-    Promise.resolve(getAdjacentPosts(post)),
+    getRelatedPosts(post),
+    getAdjacentPosts(post),
   ]);
   const relatedViewCounts = await getViewCounts(related.map((p) => p.slug));
   const toc = extractToc(post.content);

@@ -1,12 +1,20 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { posts } from "@/data/posts";
+import { useEffect, useMemo, useState } from "react";
+import type { Post } from "@/types/post";
 import PostCard from "@/components/cards/PostCard";
 import Eyebrow from "@/components/ui/Eyebrow";
 
 export default function SearchPage() {
   const [query, setQuery] = useState("");
+  const [posts, setPosts] = useState<Post[]>([]);
+
+  useEffect(() => {
+    fetch("/api/posts")
+      .then((res) => res.json())
+      .then((data) => setPosts(data.posts ?? []))
+      .catch(() => setPosts([]));
+  }, []);
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -18,7 +26,7 @@ export default function SearchPage() {
         p.content.toLowerCase().includes(q) ||
         p.tags.some((tag) => tag.toLowerCase().includes(q)),
     );
-  }, [query]);
+  }, [query, posts]);
 
   return (
     <div className="pt-32 pb-24 md:pt-40 md:pb-32">

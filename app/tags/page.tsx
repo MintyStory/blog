@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
-import { getAllTags } from "@/data/tags";
+import { getAllTags } from "@/lib/posts";
 import { TagPill } from "@/components/ui/TagPill";
 import Eyebrow from "@/components/ui/Eyebrow";
 
 export const metadata: Metadata = { title: "태그 — DEV LOG" };
+export const dynamic = "force-dynamic";
 
-export default function TagsPage() {
-  const tags = getAllTags();
+export default async function TagsPage() {
+  const tags = await getAllTags();
   const maxCount = Math.max(...tags.map((t) => t.count), 1);
 
   return (

@@ -1,19 +1,9 @@
-export type CategorySlug = "frontend" | "backend" | "infra";
+import type { Post } from "@/types/post";
 
-export interface Post {
-  slug: string;
-  title: string;
-  excerpt: string;
-  category: CategorySlug;
-  categoryLabel: string;
-  tags: string[];
-  coverImage: string;
-  date: string; // "2026-09-14"
-  content: string; // markdown
-  popular: boolean;
-}
-
-export const posts: Post[] = [
+// Firestore `posts` 컬렉션을 처음 채울 때 쓰는 시드 데이터.
+// Firebase Admin이 설정되지 않은 개발 환경(예: Firebase 프로젝트 없이 `npm run dev`)에서는
+// lib/posts.ts가 이 배열을 그대로 폴백으로 사용해 UI가 계속 동작하게 한다.
+export const seedPosts: Post[] = [
   {
     slug: "react-rendering",
     title: "React 렌더링 최적화: useMemo와 useCallback의 진짜 사용 시점",
@@ -24,6 +14,7 @@ export const posts: Post[] = [
     coverImage: "/images/popular-react-rendering.webp",
     date: "2026-09-14",
     popular: true,
+    status: "published",
     content: `## 언제 메모이제이션이 필요한가
 
 리렌더링 자체는 비싸지 않다. 문제는 **비싸진 자식 컴포넌트의 리렌더링**이다.
@@ -53,6 +44,7 @@ const value = useMemo(() => computeExpensive(items), [items]);
     coverImage: "/images/latest-react-rendering-notes.webp",
     date: "2026-09-07",
     popular: false,
+    status: "published",
     content: `## Profiler 탭 읽는 법
 
 커밋마다 렌더링된 컴포넌트와 소요 시간이 표시된다. "Why did this render?" 옵션을 켜두면 원인 추적이 쉬워진다.
@@ -73,6 +65,7 @@ const value = useMemo(() => computeExpensive(items), [items]);
     coverImage: "/images/popular-typescript-generics.webp",
     date: "2026-09-03",
     popular: true,
+    status: "published",
     content: `## 1. 조건부 타입으로 오버로드 줄이기
 
 \`\`\`ts
@@ -97,6 +90,7 @@ type Result<T> = T extends string ? string[] : T[];
     coverImage: "/images/latest-typescript-generics.webp",
     date: "2026-09-03",
     popular: false,
+    status: "published",
     content: `## 핵심 3가지
 
 1. 제네릭은 "타입을 매개변수화"하는 도구다
@@ -113,6 +107,7 @@ type Result<T> = T extends string ? string[] : T[];
     coverImage: "/images/category-frontend.webp",
     date: "2026-08-20",
     popular: false,
+    status: "published",
     content: `## 문제
 
 컴포넌트마다 색상 값이 하드코딩되어 있어 테마 변경이 사실상 불가능했다.
@@ -131,6 +126,7 @@ CSS 커스텀 프로퍼티 + Tailwind 테마 토큰으로 단일 소스를 만�
     coverImage: "/images/popular-api-optimization.webp",
     date: "2026-09-10",
     popular: true,
+    status: "published",
     content: `## 1. N+1 쿼리 제거
 
 가장 큰 병목은 항상 N+1이다. \`JOIN\`이나 배치 로딩으로 해결.
@@ -153,6 +149,7 @@ CSS 커스텀 프로퍼티 + Tailwind 테마 토큰으로 단일 소스를 만�
     coverImage: "/images/latest-api-optimization.webp",
     date: "2026-09-10",
     popular: false,
+    status: "published",
     content: `## 실패한 시도: 무작정 캐시 레이어 추가
 
 캐시 무효화 로직이 더 복잡해져서 오히려 버그가 늘었다.
@@ -171,6 +168,7 @@ CSS 커스텀 프로퍼티 + Tailwind 테마 토큰으로 단일 소스를 만�
     coverImage: "/images/category-backend.webp",
     date: "2026-08-15",
     popular: false,
+    status: "published",
     content: `## 증상
 
 읽기는 빨라졌지만 쓰기 지연이 급증했다.
@@ -193,6 +191,7 @@ CSS 커스텀 프로퍼티 + Tailwind 테마 토큰으로 단일 소스를 만�
     coverImage: "/images/popular-cicd-pipeline.webp",
     date: "2026-08-28",
     popular: true,
+    status: "published",
     content: `## 워크플로 구성
 
 \`\`\`yaml
@@ -218,6 +217,7 @@ jobs:
     coverImage: "/images/latest-cicd-pipeline.webp",
     date: "2026-08-28",
     popular: false,
+    status: "published",
     content: `## 캐시 키 전략
 
 \`package-lock.json\` 해시를 캐시 키에 포함시켜 의존성 변경 시에만 캐시를 무효화했다.
@@ -236,6 +236,7 @@ Slack 웹훅으로 실패한 job만 알림.`,
     coverImage: "/images/latest-deployment-automation.webp",
     date: "2026-09-14",
     popular: false,
+    status: "published",
     content: `## Terraform으로 인프라 코드화
 
 ## ArgoCD로 선언적 배포
@@ -256,6 +257,7 @@ Git 저장소의 상태가 곧 클러스터의 상태가 되도록 구성했다.
     coverImage: "/images/popular-side-project-retrospective.webp",
     date: "2026-07-30",
     popular: true,
+    status: "published",
     content: `## 잘한 것
 
 - 작게 시작해서 빠르게 배포한 것
@@ -267,35 +269,3 @@ Git 저장소의 상태가 곧 클러스터의 상태가 되도록 구성했다.
 - 인프라 비용 모니터링을 소홀히 한 것`,
   },
 ];
-
-export function getPostBySlug(slug: string): Post | undefined {
-  return posts.find((p) => p.slug === slug);
-}
-
-export function getPostsByCategory(category: CategorySlug): Post[] {
-  return posts.filter((p) => p.category === category);
-}
-
-export function getPostsByTag(tag: string): Post[] {
-  return posts.filter((p) => p.tags.includes(tag));
-}
-
-export function getRelatedPosts(post: Post, limit = 3): Post[] {
-  return posts.filter((p) => p.category === post.category && p.slug !== post.slug).slice(0, limit);
-}
-
-export function getAdjacentPosts(post: Post): { prev: Post | null; next: Post | null } {
-  const sorted = [...posts].sort((a, b) => a.date.localeCompare(b.date));
-  const index = sorted.findIndex((p) => p.slug === post.slug);
-  return {
-    prev: index > 0 ? sorted[index - 1] : null,
-    next: index < sorted.length - 1 ? sorted[index + 1] : null,
-  };
-}
-
-export function sortPosts(list: Post[], sort: "latest" | "popular"): Post[] {
-  if (sort === "popular") {
-    return [...list].sort((a, b) => Number(b.popular) - Number(a.popular) || b.date.localeCompare(a.date));
-  }
-  return [...list].sort((a, b) => b.date.localeCompare(a.date));
-}

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import type { Post } from "@/data/posts";
+import type { Post } from "@/types/post";
 import Eyebrow from "@/components/ui/Eyebrow";
 import Reveal from "@/components/ui/Reveal";
 import LargeBgText from "@/components/ui/LargeBgText";

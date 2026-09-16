@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { Post } from "@/data/posts";
+import type { Post } from "@/types/post";
 
 export default function PrevNextNav({ prev, next }: { prev: Post | null; next: Post | null }) {
   if (!prev && !next) return null;

@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
-import { posts } from "@/data/posts";
+import { getAllPosts } from "@/lib/posts";
 import { getViewCounts } from "@/lib/viewCounts";
 import Eyebrow from "@/components/ui/Eyebrow";
 import PostListView from "@/components/post/PostListView";
 
 export const metadata: Metadata = { title: "전체 글 — DEV LOG" };
+export const dynamic = "force-dynamic";
 
 export default async function PostsPage() {
+  const posts = await getAllPosts();
   const viewCounts = await getViewCounts(posts.map((p) => p.slug));
 
   return (

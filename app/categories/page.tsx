@@ -1,12 +1,15 @@
 import type { Metadata } from "next";
 import { categories } from "@/data/categories";
-import { getPostsByCategory } from "@/data/posts";
+import { getAllPosts } from "@/lib/posts";
 import ImageOverlayCard from "@/components/cards/ImageOverlayCard";
 import Eyebrow from "@/components/ui/Eyebrow";
 
 export const metadata: Metadata = { title: "카테고리 — DEV LOG" };
+export const dynamic = "force-dynamic";
 
-export default function CategoriesPage() {
+export default async function CategoriesPage() {
+  const posts = await getAllPosts();
+
   return (
     <div className="pt-32 pb-24 md:pt-40 md:pb-32">
       <div className="container-blog">
@@ -16,7 +19,7 @@ export default function CategoriesPage() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {categories.map((cat) => {
-            const count = getPostsByCategory(cat.slug).length;
+            const count = posts.filter((p) => p.category === cat.slug).length;
             return (
               <ImageOverlayCard key={cat.slug} href={`/categories/${cat.slug}`} image={cat.coverImage} alt={`${cat.label} 카테고리`}>
                 <span className="text-[11px] font-semibold tracking-[0.07em] uppercase text-white/70 mb-2 block">

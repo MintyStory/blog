@@ -1,13 +1,15 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { posts } from "@/data/posts";
+import { getAllPosts } from "@/lib/posts";
+import type { Post } from "@/types/post";
 import Eyebrow from "@/components/ui/Eyebrow";
 import { CategoryPill } from "@/components/ui/TagPill";
 
 export const metadata: Metadata = { title: "아카이브 — DEV LOG" };
+export const dynamic = "force-dynamic";
 
-function groupByYearMonth(list: typeof posts) {
-  const years = new Map<string, Map<string, typeof posts>>();
+function groupByYearMonth(list: Post[]) {
+  const years = new Map<string, Map<string, Post[]>>();
   for (const post of [...list].sort((a, b) => b.date.localeCompare(a.date))) {
     const [year, month] = post.date.split("-");
     if (!years.has(year)) years.set(year, new Map());
@@ -18,7 +20,8 @@ function groupByYearMonth(list: typeof posts) {
   return years;
 }
 
-export default function ArchivePage() {
+export default async function ArchivePage() {
+  const posts = await getAllPosts();
   const years = groupByYearMonth(posts);
 
   return (

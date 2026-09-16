@@ -1,14 +1,11 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { getPostsByTag } from "@/data/posts";
-import { getAllTags } from "@/data/tags";
+import { getPostsByTag } from "@/lib/posts";
 import { getViewCounts } from "@/lib/viewCounts";
 import Eyebrow from "@/components/ui/Eyebrow";
 import PostListView from "@/components/post/PostListView";
 
-export function generateStaticParams() {
-  return getAllTags().map((t) => ({ tag: t.tag }));
-}
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: { params: Promise<{ tag: string }> }): Promise<Metadata> {
   const { tag } = await params;
@@ -18,7 +15,7 @@ export async function generateMetadata({ params }: { params: Promise<{ tag: stri
 export default async function TagDetailPage({ params }: { params: Promise<{ tag: string }> }) {
   const { tag: rawTag } = await params;
   const tag = decodeURIComponent(rawTag);
-  const tagPosts = getPostsByTag(tag);
+  const tagPosts = await getPostsByTag(tag);
   if (tagPosts.length === 0) notFound();
 
   const viewCounts = await getViewCounts(tagPosts.map((p) => p.slug));

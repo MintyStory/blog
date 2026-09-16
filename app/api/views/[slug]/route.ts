@@ -1,12 +1,13 @@
 import { FieldValue } from "firebase-admin/firestore";
 import { NextResponse } from "next/server";
 import { adminDb, isFirebaseAdminConfigured } from "@/lib/firebase/admin";
-import { getPostBySlug } from "@/data/posts";
+import { getPostBySlug } from "@/lib/posts";
 
 export async function POST(_req: Request, { params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
+  const { slug: rawSlug } = await params;
+  const slug = decodeURIComponent(rawSlug);
 
-  if (!getPostBySlug(slug)) {
+  if (!(await getPostBySlug(slug))) {
     return NextResponse.json({ error: "post not found" }, { status: 404 });
   }
   if (!isFirebaseAdminConfigured || !adminDb) {

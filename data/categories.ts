@@ -1,4 +1,4 @@
-import type { CategorySlug } from "./posts";
+import type { CategorySlug } from "@/types/post";
 
 export interface CategoryMeta {
   slug: CategorySlug;
