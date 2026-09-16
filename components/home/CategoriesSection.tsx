@@ -1,9 +1,11 @@
-import { categories } from "@/data/categories";
+import { getAllCategories } from "@/lib/categories";
 import ImageOverlayCard from "@/components/cards/ImageOverlayCard";
 import Reveal from "@/components/ui/Reveal";
 import Eyebrow from "@/components/ui/Eyebrow";
 
-export default function CategoriesSection() {
+export default async function CategoriesSection() {
+  const categories = await getAllCategories();
+
   return (
     <section className="py-20 md:py-[140px]">
       <div className="container-blog">

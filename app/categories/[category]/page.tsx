@@ -1,26 +1,23 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { categories, getCategoryMeta } from "@/data/categories";
+import { getCategoryMeta } from "@/lib/categories";
 import { getPostsByCategory } from "@/lib/posts";
 import { getViewCounts } from "@/lib/viewCounts";
 import PostListView from "@/components/post/PostListView";
 
 export const dynamic = "force-dynamic";
 
-export function generateStaticParams() {
-  return categories.map((c) => ({ category: c.slug }));
-}
-
 export async function generateMetadata({ params }: { params: Promise<{ category: string }> }): Promise<Metadata> {
-  const { category } = await params;
-  const meta = getCategoryMeta(category);
+  const { category: rawCategory } = await params;
+  const meta = await getCategoryMeta(decodeURIComponent(rawCategory));
   return meta ? { title: `${meta.label} — DEV LOG` } : {};
 }
 
 export default async function CategoryDetailPage({ params }: { params: Promise<{ category: string }> }) {
-  const { category } = await params;
-  const meta = getCategoryMeta(category);
+  const { category: rawCategory } = await params;
+  const category = decodeURIComponent(rawCategory);
+  const meta = await getCategoryMeta(category);
   if (!meta) notFound();
 
   const categoryPosts = await getPostsByCategory(meta.slug);

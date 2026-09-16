@@ -1,10 +1,10 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import type { Post, PostStatus, CategorySlug } from "@/types/post";
-import { categories } from "@/data/categories";
+import type { Category } from "@/types/category";
 import { availableImages } from "@/data/availableImages";
 import { slugify } from "@/lib/slugify";
 import { useAdminFetch } from "@/hooks/useAdminFetch";
@@ -51,6 +51,23 @@ export default function PostForm({ mode, post }: { mode: "create" | "edit"; post
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/categories");
+        const data = await res.json();
+        if (!cancelled) setCategories(data.categories ?? []);
+      } catch {
+        // 카테고리 목록을 못 불러와도 폼 자체는 계속 쓸 수 있어야 한다.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const categoryMeta = categories.find((c) => c.slug === values.category);
 
@@ -182,6 +199,9 @@ export default function PostForm({ mode, post }: { mode: "create" | "edit"; post
             value={values.category}
             onChange={(e) => setValues((v) => ({ ...v, category: e.target.value as CategorySlug }))}
           >
+            {!categories.some((c) => c.slug === values.category) && (
+              <option value={values.category}>{post?.categoryLabel ?? values.category}</option>
+            )}
             {categories.map((c) => (
               <option key={c.slug} value={c.slug}>
                 {c.label}

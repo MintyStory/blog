@@ -13,9 +13,14 @@ export default function AdminPage() {
               <Eyebrow>Admin</Eyebrow>
               <h1 className="text-[30px] md:text-[40px] font-extrabold leading-[1.18] tracking-[-0.02em]">방문자 조회수 관리</h1>
             </div>
-            <Link href="/admin/posts" className="btn-pill">
-              글 관리 &rarr;
-            </Link>
+            <div className="flex gap-2">
+              <Link href="/admin/categories" className="btn-pill">
+                카테고리 관리 &rarr;
+              </Link>
+              <Link href="/admin/posts" className="btn-pill">
+                글 관리 &rarr;
+              </Link>
+            </div>
           </div>
           <ViewsDashboard />
         </div>

@@ -23,5 +23,11 @@ service cloud.firestore {
       // 클라이언트 Firestore SDK는 이 컬렉션에 절대 직접 접근하지 않는다.
       allow read, write: if false;
     }
+
+    match /categories/{slug} {
+      // posts와 동일한 이유로 서버(Admin SDK)를 거쳐서만 접근한다 —
+      // 공개 목록은 /api/categories, 관리자 CRUD는 /api/admin/categories/** 가 처리한다.
+      allow read, write: if false;
+    }
   }
 }

@@ -1,13 +1,6 @@
-import type { CategorySlug } from "@/types/post";
+import type { Category } from "@/types/category";
 
-export interface CategoryMeta {
-  slug: CategorySlug;
-  label: string;
-  description: string;
-  coverImage: string;
-}
-
-export const categories: CategoryMeta[] = [
+export const seedCategories: Category[] = [
   {
     slug: "frontend",
     label: "Frontend",
@@ -27,7 +20,3 @@ export const categories: CategoryMeta[] = [
     coverImage: "/images/category-infra.webp",
   },
 ];
-
-export function getCategoryMeta(slug: string): CategoryMeta | undefined {
-  return categories.find((c) => c.slug === slug);
-}

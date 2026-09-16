@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import LoginButton from "@/components/auth/LoginButton";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useSidebar } from "@/components/providers/SidebarProvider";
+import type { Category } from "@/types/category";
 
 const SIDEBAR_WIDTH = "min(380px, 85vw)";
 
@@ -12,6 +13,7 @@ export default function Sidebar() {
   const { open, close } = useSidebar();
   const { isAdmin } = useAuth();
   const [categoryOpen, setCategoryOpen] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
@@ -20,6 +22,22 @@ export default function Sidebar() {
     document.addEventListener("keydown", onKeyDown);
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [close]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/categories");
+        const data = await res.json();
+        if (!cancelled) setCategories(data.categories ?? []);
+      } catch {
+        // 사이드바는 카테고리 목록을 못 불러와도 나머지 메뉴는 계속 동작해야 한다.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <aside
@@ -83,18 +101,14 @@ export default function Sidebar() {
               }`}
               aria-hidden={!categoryOpen}
             >
-              {[
-                { href: "/categories/frontend", label: "Frontend" },
-                { href: "/categories/backend", label: "Backend" },
-                { href: "/categories/infra", label: "Infra" },
-              ].map((item) => (
-                <li key={item.href}>
+              {categories.map((cat) => (
+                <li key={cat.slug}>
                   <Link
-                    href={item.href}
+                    href={`/categories/${cat.slug}`}
                     onClick={close}
                     className="block py-2.5 pl-3 text-[15px] text-white/75 hover:text-white transition-colors"
                   >
-                    {item.label}
+                    {cat.label}
                   </Link>
                 </li>
               ))}

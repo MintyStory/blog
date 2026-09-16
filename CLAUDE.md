@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project state
 
-Next.js (App Router, TypeScript, Tailwind CSS v4) app. UI is fully built out across all user-facing routes from `sitemap.md`. Post content is a real Firestore-backed CMS (not dummy data) — Google sign-in, per-post view counts, and full post CRUD (create/edit/delete, draft/published status) all run against Firebase (Auth + Firestore). Admin is scoped to a view-count dashboard (`/admin`) and post management (`/admin/posts/**`) — the rest of `sitemap.md`'s admin surface (media library, SEO settings, comment moderation, etc.) is out of scope. `DESIGN.md` is the design-system spec this UI implements; `sitemap.md` is the original full feature/route map (its Firebase/Next.js/Vercel stack section reflects what's now implemented, not still-pending plans).
+Next.js (App Router, TypeScript, Tailwind CSS v4) app. UI is fully built out across all user-facing routes from `sitemap.md`. Post content and categories are a real Firestore-backed CMS (not dummy data) — Google sign-in, per-post view counts, full post CRUD, and full category CRUD (all create/edit/delete) run against Firebase (Auth + Firestore). Admin is scoped to a view-count dashboard (`/admin`), post management (`/admin/posts/**`), and category management (`/admin/categories/**`) — the rest of `sitemap.md`'s admin surface (media library, SEO settings, comment moderation, etc.) is out of scope. `DESIGN.md` is the design-system spec this UI implements; `sitemap.md` is the original full feature/route map (its Firebase/Next.js/Vercel stack section reflects what's now implemented, not still-pending plans).
 
 ## Commands
 
@@ -29,13 +29,14 @@ To enable them:
 6. `firestore.rules`를 Firebase 콘솔 Rules 탭에 붙여넣거나 `firebase deploy --only firestore:rules`로 배포.
 7. 앱에서 Google로 한 번 로그인 → Firestore에 `users/{uid}` 문서 자동 생성됨 → 콘솔에서 그 문서의 `isAdmin` 필드를 수동으로 `true`로 변경 (최초 관리자 지정은 의도적으로 코드로 자동화하지 않음) → `/admin`, `/admin/posts` 접근 가능.
 8. `npm run seed:posts` — `data/seedPosts.ts`의 더미 글 12개를 Firestore `posts` 컬렉션에 1회성으로 채워 넣는다 (이미 존재하는 slug는 건너뜀). 새 Firebase 프로젝트를 막 연결했을 때 콘텐츠가 비어있지 않게 하려는 용도.
+9. `npm run seed:categories` — `data/seedCategories.ts`의 기본 카테고리 3개(frontend/backend/infra)를 Firestore `categories` 컬렉션에 1회성으로 채워 넣는다. `getAllCategories`는 posts와 달리 Firestore가 설정돼 있으면 빈 컬렉션이어도 그대로 빈 배열을 반환하므로(폴백하지 않음), 새 Firebase 프로젝트를 연결한 직후에는 이 스크립트를 꼭 실행해야 카테고리 페이지/홈 화면이 비지 않는다.
 
 ## Architecture
 
 ### Content: Firestore-backed, not dummy data
 
 - Posts live in Firestore `posts/{slug}` (doc id = slug), shaped by `types/post.ts#Post`. `lib/posts.ts` (server-only, imports `firebase-admin` — never import it from a client component) is the single data-access layer: `getAllPosts({includeDrafts})`, `getPostBySlug(slug, {includeDrafts})`, `getPostsByCategory`, `getPostsByTag`, `getRelatedPosts`, `getAdjacentPosts`, `getAllTags`, plus the write functions `createPost`/`updatePost`/`deletePost` used only by the admin API routes. If `firebase-admin` isn't configured, every read function transparently falls back to `data/seedPosts.ts` (filtered to `status: "published"` unless `includeDrafts` is set) so the app still renders with content in a Firebase-less dev environment.
-- `categories` (3 fixed categories with cover images) is still plain static data in `data/categories.ts` — not part of the CMS, not editable via `/admin`.
+- Categories live in Firestore `categories/{slug}` (doc id = slug), shaped by `types/category.ts#Category`. `lib/categories.ts` (server-only) is the data-access layer: `getAllCategories()`, `getCategoryMeta(slug)`, plus `createCategory`/`updateCategory`/`deleteCategory` used only by the admin API routes. Unlike `lib/posts.ts`, it only falls back to `data/seedCategories.ts` when `firebase-admin` isn't configured at all — if Firebase *is* configured but the `categories` collection is empty, it returns an empty array (run `npm run seed:categories` after connecting a fresh project, see setup step 9 above). `Post.category` (`types/post.ts#CategorySlug`) is just `string`, not a fixed union — categories are managed like posts, not hardcoded.
 - Client components can't reach `lib/posts.ts` directly (server-only). The `/search` page fetches the public `GET /api/posts` route instead (published posts only); the admin post list/editor fetch the token-gated `/api/admin/posts` routes via `hooks/useAdminFetch.ts`.
 - View counts remain the other piece of real per-post state: stored in Firestore `postViews/{slug}`, incremented only via `POST /api/views/[slug]` (Admin SDK; client writes are blocked by `firestore.rules`), read server-side via `lib/viewCounts.ts` (`getViewCount`, `getViewCounts`, `getAllViewCounts`).
 - Every route that reads posts/views sets `export const dynamic = "force-dynamic"` — content is editable at runtime via `/admin`, so these pages must not be statically cached.
@@ -58,6 +59,13 @@ To enable them:
 - `app/admin/posts/page.tsx` (list), `.../new/page.tsx` (create), `.../[slug]/edit/page.tsx` (edit) are all `AdminGuard`-wrapped, but the actual data fetching is done by client components (`PostsManager`, `PostEditor`) calling the token-gated `/api/admin/posts` routes via `useAdminFetch` — this is deliberate: a draft post's content must never appear in a Server Component's rendered HTML for a non-admin request, so even the edit page's initial load goes through the authenticated API rather than `getPostBySlug` directly.
 - `components/admin/PostForm.tsx` is shared by create and edit (`mode` prop); `slug` is editable only in create mode (immutable afterward, since it's the Firestore doc id) and auto-derived from the title via `lib/slugify.ts` until the user edits it manually.
 - Cover images are picked from `data/availableImages.ts` (existing `public/images/*.webp` assets) rather than uploaded — there's no Firebase Storage integration yet. Add new files there (and to `public/images/`) before they can be selected.
+
+### Category CRUD (admin)
+
+- Mirrors post CRUD exactly, one collection down: `app/admin/categories/page.tsx` (list), `.../new/page.tsx` (create), `.../[slug]/edit/page.tsx` (edit), all `AdminGuard`-wrapped with data fetching done by `CategoriesManager`/`CategoryEditor` calling the token-gated `/api/admin/categories` routes via `useAdminFetch`.
+- `components/admin/CategoryForm.tsx` is shared by create/edit; `slug` is immutable after creation (Firestore doc id) and auto-derived from the name via `lib/slugify.ts`.
+- Deleting a category does **not** touch posts already assigned to it — their `category`/`categoryLabel` fields are left as-is (a post can end up pointing at a deleted category's slug; `PostForm`'s category `<select>` handles this by showing the post's current category as an extra option even if it's missing from the live list, so editing an orphaned post doesn't silently reassign it).
+- Public read access for the category picker/sidebar is `GET /api/categories` (no auth) — used by `PostForm`'s category `<select>` and `Sidebar`'s category submenu, both client components that can't import the server-only `lib/categories.ts` directly.
 
 ### Sidebar (not the original overlay menu)
 

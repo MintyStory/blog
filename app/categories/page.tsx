@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { categories } from "@/data/categories";
+import { getAllCategories } from "@/lib/categories";
 import { getAllPosts } from "@/lib/posts";
 import ImageOverlayCard from "@/components/cards/ImageOverlayCard";
 import Eyebrow from "@/components/ui/Eyebrow";
@@ -8,7 +8,7 @@ export const metadata: Metadata = { title: "카테고리 — DEV LOG" };
 export const dynamic = "force-dynamic";
 
 export default async function CategoriesPage() {
-  const posts = await getAllPosts();
+  const [categories, posts] = await Promise.all([getAllCategories(), getAllPosts()]);
 
   return (
     <div className="pt-32 pb-24 md:pt-40 md:pb-32">
