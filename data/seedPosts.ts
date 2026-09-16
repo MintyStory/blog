@@ -1,6 +1,6 @@
 import type { Post } from "@/types/post";
 
-// Firestore `posts` 컬렉션을 처음 채울 때 쓰는 시드 데이터.
+// Firestore `posts` 컬렉션을 처음 채울 때 쓰는 시드 데이터. content는 Tiptap 에디터가 저장하는 것과 같은 HTML 문자열이다.
 // Firebase Admin이 설정되지 않은 개발 환경(예: Firebase 프로젝트 없이 `npm run dev`)에서는
 // lib/posts.ts가 이 배열을 그대로 폴백으로 사용해 UI가 계속 동작하게 한다.
 export const seedPosts: Post[] = [
@@ -10,29 +10,12 @@ export const seedPosts: Post[] = [
     excerpt: "무분별한 메모이제이션은 오히려 독이 된다. 실제로 효과가 있는 상황만 골라서 적용한 기록.",
     category: "frontend",
     categoryLabel: "Frontend",
-    tags: ["React", "성능최적화"],
+    tags: ["React","성능최적화"],
     coverImage: "/images/popular-react-rendering.webp",
     date: "2026-09-14",
     popular: true,
     status: "published",
-    content: `## 언제 메모이제이션이 필요한가
-
-리렌더링 자체는 비싸지 않다. 문제는 **비싸진 자식 컴포넌트의 리렌더링**이다.
-
-\`\`\`tsx
-const value = useMemo(() => computeExpensive(items), [items]);
-\`\`\`
-
-## useCallback은 참조 동일성 때문에만 쓴다
-
-- 자식이 \`React.memo\`로 감싸져 있을 때
-- 의존성 배열에 함수가 들어갈 때
-
-그 외에는 대부분 불필요하다.
-
-## 결론
-
-프로파일러로 먼저 측정하고, 병목이 확인된 지점에만 적용하자.`,
+    content: "<h2>언제 메모이제이션이 필요한가</h2>\n<p>리렌더링 자체는 비싸지 않다. 문제는 <strong>비싸진 자식 컴포넌트의 리렌더링</strong>이다.</p>\n<pre><code class=\"language-tsx\">const value = useMemo(() => computeExpensive(items), [items]);\n</code></pre>\n<h2>useCallback은 참조 동일성 때문에만 쓴다</h2>\n<ul>\n<li>자식이 <code>React.memo</code>로 감싸져 있을 때</li>\n<li>의존성 배열에 함수가 들어갈 때</li>\n</ul>\n<p>그 외에는 대부분 불필요하다.</p>\n<h2>결론</h2>\n<p>프로파일러로 먼저 측정하고, 병목이 확인된 지점에만 적용하자.</p>",
   },
   {
     slug: "react-rendering-notes",
@@ -40,20 +23,12 @@ const value = useMemo(() => computeExpensive(items), [items]);
     excerpt: "위 글을 쓰기 전 정리했던 러프한 학습 노트. React DevTools Profiler 사용법 위주.",
     category: "frontend",
     categoryLabel: "Frontend",
-    tags: ["React", "성능최적화"],
+    tags: ["React","성능최적화"],
     coverImage: "/images/latest-react-rendering-notes.webp",
     date: "2026-09-07",
     popular: false,
     status: "published",
-    content: `## Profiler 탭 읽는 법
-
-커밋마다 렌더링된 컴포넌트와 소요 시간이 표시된다. "Why did this render?" 옵션을 켜두면 원인 추적이 쉬워진다.
-
-## 체크리스트
-
-1. 리스트 렌더링에 안정적인 key를 쓰고 있는가
-2. Context 값이 매 렌더마다 새 객체로 생성되지 않는가
-3. 불필요하게 깊은 props drilling이 있는가`,
+    content: "<h2>Profiler 탭 읽는 법</h2>\n<p>커밋마다 렌더링된 컴포넌트와 소요 시간이 표시된다. \"Why did this render?\" 옵션을 켜두면 원인 추적이 쉬워진다.</p>\n<h2>체크리스트</h2>\n<ol>\n<li>리스트 렌더링에 안정적인 key를 쓰고 있는가</li>\n<li>Context 값이 매 렌더마다 새 객체로 생성되지 않는가</li>\n<li>불필요하게 깊은 props drilling이 있는가</li>\n</ol>",
   },
   {
     slug: "typescript-generics",
@@ -66,19 +41,7 @@ const value = useMemo(() => computeExpensive(items), [items]);
     date: "2026-09-03",
     popular: true,
     status: "published",
-    content: `## 1. 조건부 타입으로 오버로드 줄이기
-
-\`\`\`ts
-type Result<T> = T extends string ? string[] : T[];
-\`\`\`
-
-## 2. \`infer\`로 반환 타입 추출
-
-## 3. 제네릭 기본값
-
-## 4. 유틸리티 타입 조합
-
-## 5. 빌더 패턴에서의 제네릭 체이닝`,
+    content: "<h2>1. 조건부 타입으로 오버로드 줄이기</h2>\n<pre><code class=\"language-ts\">type Result&#x3C;T> = T extends string ? string[] : T[];\n</code></pre>\n<h2>2. <code>infer</code>로 반환 타입 추출</h2>\n<h2>3. 제네릭 기본값</h2>\n<h2>4. 유틸리티 타입 조합</h2>\n<h2>5. 빌더 패턴에서의 제네릭 체이닝</h2>",
   },
   {
     slug: "typescript-generics-summary",
@@ -91,11 +54,7 @@ type Result<T> = T extends string ? string[] : T[];
     date: "2026-09-03",
     popular: false,
     status: "published",
-    content: `## 핵심 3가지
-
-1. 제네릭은 "타입을 매개변수화"하는 도구다
-2. 제약(\`extends\`)으로 안전성을 확보한다
-3. 추론에 맡길 수 있으면 명시하지 않는다`,
+    content: "<h2>핵심 3가지</h2>\n<ol>\n<li>제네릭은 \"타입을 매개변수화\"하는 도구다</li>\n<li>제약(<code>extends</code>)으로 안전성을 확보한다</li>\n<li>추론에 맡길 수 있으면 명시하지 않는다</li>\n</ol>",
   },
   {
     slug: "frontend-design-system",
@@ -103,18 +62,12 @@ type Result<T> = T extends string ? string[] : T[];
     excerpt: "컴포넌트가 늘어날수록 일관성이 무너지던 문제를 토큰 기반 설계로 해결한 과정.",
     category: "frontend",
     categoryLabel: "Frontend",
-    tags: ["디자인시스템", "React"],
+    tags: ["디자인시스템","React"],
     coverImage: "/images/category-frontend.webp",
     date: "2026-08-20",
     popular: false,
     status: "published",
-    content: `## 문제
-
-컴포넌트마다 색상 값이 하드코딩되어 있어 테마 변경이 사실상 불가능했다.
-
-## 해결
-
-CSS 커스텀 프로퍼티 + Tailwind 테마 토큰으로 단일 소스를 만들었다.`,
+    content: "<h2>문제</h2>\n<p>컴포넌트마다 색상 값이 하드코딩되어 있어 테마 변경이 사실상 불가능했다.</p>\n<h2>해결</h2>\n<p>CSS 커스텀 프로퍼티 + Tailwind 테마 토큰으로 단일 소스를 만들었다.</p>",
   },
   {
     slug: "api-optimization",
@@ -122,22 +75,12 @@ CSS 커스텀 프로퍼티 + Tailwind 테마 토큰으로 단일 소스를 만�
     excerpt: "평균 응답시간 1.2초짜리 API를 120ms까지 줄인 과정을 순서대로 기록했다.",
     category: "backend",
     categoryLabel: "Backend",
-    tags: ["API", "성능최적화"],
+    tags: ["API","성능최적화"],
     coverImage: "/images/popular-api-optimization.webp",
     date: "2026-09-10",
     popular: true,
     status: "published",
-    content: `## 1. N+1 쿼리 제거
-
-가장 큰 병목은 항상 N+1이다. \`JOIN\`이나 배치 로딩으로 해결.
-
-## 2. 인덱스 재설계
-
-## 3. 응답 캐싱
-
-## 결과
-
-1.2s → 120ms`,
+    content: "<h2>1. N+1 쿼리 제거</h2>\n<p>가장 큰 병목은 항상 N+1이다. <code>JOIN</code>이나 배치 로딩으로 해결.</p>\n<h2>2. 인덱스 재설계</h2>\n<h2>3. 응답 캐싱</h2>\n<h2>결과</h2>\n<p>1.2s → 120ms</p>",
   },
   {
     slug: "api-optimization-notes",
@@ -145,18 +88,12 @@ CSS 커스텀 프로퍼티 + Tailwind 테마 토큰으로 단일 소스를 만�
     excerpt: "본 최적화 작업 중 시도했다가 실패한 방법들까지 포함한 실험 기록.",
     category: "backend",
     categoryLabel: "Backend",
-    tags: ["API", "성능최적화"],
+    tags: ["API","성능최적화"],
     coverImage: "/images/latest-api-optimization.webp",
     date: "2026-09-10",
     popular: false,
     status: "published",
-    content: `## 실패한 시도: 무작정 캐시 레이어 추가
-
-캐시 무효화 로직이 더 복잡해져서 오히려 버그가 늘었다.
-
-## 성공한 시도: 쿼리 프로파일링부터
-
-\`EXPLAIN ANALYZE\`로 실제 병목을 먼저 확인한 뒤 접근한 것이 훨씬 효율적이었다.`,
+    content: "<h2>실패한 시도: 무작정 캐시 레이어 추가</h2>\n<p>캐시 무효화 로직이 더 복잡해져서 오히려 버그가 늘었다.</p>\n<h2>성공한 시도: 쿼리 프로파일링부터</h2>\n<p><code>EXPLAIN ANALYZE</code>로 실제 병목을 먼저 확인한 뒤 접근한 것이 훨씬 효율적이었다.</p>",
   },
   {
     slug: "database-indexing",
@@ -169,17 +106,7 @@ CSS 커스텀 프로퍼티 + Tailwind 테마 토큰으로 단일 소스를 만�
     date: "2026-08-15",
     popular: false,
     status: "published",
-    content: `## 증상
-
-읽기는 빨라졌지만 쓰기 지연이 급증했다.
-
-## 원인
-
-인덱스 6개 중 3개가 실제로는 쿼리 플래너에서 쓰이지 않고 있었다.
-
-## 조치
-
-사용되지 않는 인덱스를 제거하고 복합 인덱스로 통합했다.`,
+    content: "<h2>증상</h2>\n<p>읽기는 빨라졌지만 쓰기 지연이 급증했다.</p>\n<h2>원인</h2>\n<p>인덱스 6개 중 3개가 실제로는 쿼리 플래너에서 쓰이지 않고 있었다.</p>\n<h2>조치</h2>\n<p>사용되지 않는 인덱스를 제거하고 복합 인덱스로 통합했다.</p>",
   },
   {
     slug: "cicd-pipeline",
@@ -187,25 +114,12 @@ CSS 커스텀 프로퍼티 + Tailwind 테마 토큰으로 단일 소스를 만�
     excerpt: "테스트-빌드-배포를 자동화하며 겪은 시행착오와 최종 워크플로 구성.",
     category: "infra",
     categoryLabel: "Infra",
-    tags: ["CI/CD", "GitHub Actions"],
+    tags: ["CI/CD","GitHub Actions"],
     coverImage: "/images/popular-cicd-pipeline.webp",
     date: "2026-08-28",
     popular: true,
     status: "published",
-    content: `## 워크플로 구성
-
-\`\`\`yaml
-on:
-  push:
-    branches: [main]
-jobs:
-  test:
-    runs-on: ubuntu-latest
-\`\`\`
-
-## 캐싱으로 빌드 시간 절반으로 줄이기
-
-## 배포 승인 단계 추가`,
+    content: "<h2>워크플로 구성</h2>\n<pre><code class=\"language-yaml\">on:\n  push:\n    branches: [main]\njobs:\n  test:\n    runs-on: ubuntu-latest\n</code></pre>\n<h2>캐싱으로 빌드 시간 절반으로 줄이기</h2>\n<h2>배포 승인 단계 추가</h2>",
   },
   {
     slug: "cicd-pipeline-notes",
@@ -213,18 +127,12 @@ jobs:
     excerpt: "파이프라인 구축 중 정리한 캐시 전략과 실패 알림 설정 메모.",
     category: "infra",
     categoryLabel: "Infra",
-    tags: ["CI/CD", "GitHub Actions"],
+    tags: ["CI/CD","GitHub Actions"],
     coverImage: "/images/latest-cicd-pipeline.webp",
     date: "2026-08-28",
     popular: false,
     status: "published",
-    content: `## 캐시 키 전략
-
-\`package-lock.json\` 해시를 캐시 키에 포함시켜 의존성 변경 시에만 캐시를 무효화했다.
-
-## 실패 알림
-
-Slack 웹훅으로 실패한 job만 알림.`,
+    content: "<h2>캐시 키 전략</h2>\n<p><code>package-lock.json</code> 해시를 캐시 키에 포함시켜 의존성 변경 시에만 캐시를 무효화했다.</p>\n<h2>실패 알림</h2>\n<p>Slack 웹훅으로 실패한 job만 알림.</p>",
   },
   {
     slug: "deployment-automation",
@@ -232,20 +140,12 @@ Slack 웹훅으로 실패한 job만 알림.`,
     excerpt: "수동 배포로 인한 사고를 겪은 뒤 GitOps 기반으로 전면 재구성한 기록.",
     category: "infra",
     categoryLabel: "Infra",
-    tags: ["Terraform", "ArgoCD", "GitOps"],
+    tags: ["Terraform","ArgoCD","GitOps"],
     coverImage: "/images/latest-deployment-automation.webp",
     date: "2026-09-14",
     popular: false,
     status: "published",
-    content: `## Terraform으로 인프라 코드화
-
-## ArgoCD로 선언적 배포
-
-Git 저장소의 상태가 곧 클러스터의 상태가 되도록 구성했다.
-
-## 얻은 것
-
-배포 이력이 전부 git log로 추적 가능해졌다.`,
+    content: "<h2>Terraform으로 인프라 코드화</h2>\n<h2>ArgoCD로 선언적 배포</h2>\n<p>Git 저장소의 상태가 곧 클러스터의 상태가 되도록 구성했다.</p>\n<h2>얻은 것</h2>\n<p>배포 이력이 전부 git log로 추적 가능해졌다.</p>",
   },
   {
     slug: "side-project-retrospective",
@@ -258,14 +158,6 @@ Git 저장소의 상태가 곧 클러스터의 상태가 되도록 구성했다.
     date: "2026-07-30",
     popular: true,
     status: "published",
-    content: `## 잘한 것
-
-- 작게 시작해서 빠르게 배포한 것
-- 사용자 피드백을 바로 반영한 것
-
-## 아쉬운 것
-
-- 테스트 코드를 너무 늦게 도입한 것
-- 인프라 비용 모니터링을 소홀히 한 것`,
+    content: "<h2>잘한 것</h2>\n<ul>\n<li>작게 시작해서 빠르게 배포한 것</li>\n<li>사용자 피드백을 바로 반영한 것</li>\n</ul>\n<h2>아쉬운 것</h2>\n<ul>\n<li>테스트 코드를 너무 늦게 도입한 것</li>\n<li>인프라 비용 모니터링을 소홀히 한 것</li>\n</ul>",
   },
 ];

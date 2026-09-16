@@ -8,7 +8,7 @@ import type { Category } from "@/types/category";
 import { availableImages } from "@/data/availableImages";
 import { slugify } from "@/lib/slugify";
 import { useAdminFetch } from "@/hooks/useAdminFetch";
-import PostBody from "@/components/post/PostBody";
+import RichTextEditor from "@/components/admin/RichTextEditor";
 
 const inputClass =
   "w-full border border-black/15 rounded-md px-4 py-2.5 text-[15px] outline-none focus:border-primary transition-colors";
@@ -49,7 +49,6 @@ export default function PostForm({ mode, post }: { mode: "create" | "edit"; post
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showPreview, setShowPreview] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
 
   useEffect(() => {
@@ -72,6 +71,10 @@ export default function PostForm({ mode, post }: { mode: "create" | "edit"; post
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!values.content.replace(/<[^>]+>/g, "").trim()) {
+      setError("본문을 입력해주세요.");
+      return;
+    }
     setSaving(true);
     setError(null);
 
@@ -254,32 +257,8 @@ export default function PostForm({ mode, post }: { mode: "create" | "edit"; post
       </div>
 
       <div>
-        <div className="flex items-center justify-between mb-2">
-          <label className={labelClass + " mb-0"} htmlFor="content">
-            본문 (마크다운)
-          </label>
-          <button
-            type="button"
-            onClick={() => setShowPreview((v) => !v)}
-            className="text-xs text-primary hover:underline"
-          >
-            {showPreview ? "편집으로 돌아가기" : "미리보기"}
-          </button>
-        </div>
-        {showPreview ? (
-          <div className="border border-black/15 rounded-md p-6 min-h-[300px]">
-            <PostBody content={values.content || "*내용 없음*"} />
-          </div>
-        ) : (
-          <textarea
-            id="content"
-            required
-            rows={16}
-            className={`${inputClass} font-mono text-sm`}
-            value={values.content}
-            onChange={(e) => setValues((v) => ({ ...v, content: e.target.value }))}
-          />
-        )}
+        <label className={labelClass}>본문</label>
+        <RichTextEditor content={values.content} onChange={(content) => setValues((v) => ({ ...v, content }))} />
       </div>
 
       <div className="flex items-center gap-6">

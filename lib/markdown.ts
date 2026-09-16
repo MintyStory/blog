@@ -1,4 +1,8 @@
+import { unified } from "unified";
+import rehypeParse from "rehype-parse";
+import { visit } from "unist-util-visit";
 import GithubSlugger from "github-slugger";
+import type { Element, Root, RootContent } from "hast";
 
 export interface TocItem {
   id: string;
@@ -6,19 +10,27 @@ export interface TocItem {
   depth: 2 | 3;
 }
 
-export function extractToc(markdown: string): TocItem[] {
+function textContent(node: Element | RootContent): string {
+  if (node.type === "text") return node.value;
+  if ("children" in node) return node.children.map(textContent).join("");
+  return "";
+}
+
+/**
+ * 글 본문(Tiptap이 저장한 HTML)에서 h2/h3만 뽑아 목차를 만든다.
+ * ID는 PostBody의 rehype-slug와 동일하게 github-slugger로 생성 — 두 곳이 어긋나면 앵커 링크가 깨진다.
+ */
+export function extractToc(html: string): TocItem[] {
+  const tree = unified().use(rehypeParse, { fragment: true }).parse(html) as Root;
   const slugger = new GithubSlugger();
   const items: TocItem[] = [];
-  const lines = markdown.split("\n");
 
-  for (const line of lines) {
-    const h2 = /^##\s+(.+)/.exec(line);
-    const h3 = /^###\s+(.+)/.exec(line);
-    if (h2) {
-      items.push({ id: slugger.slug(h2[1]), text: h2[1], depth: 2 });
-    } else if (h3) {
-      items.push({ id: slugger.slug(h3[1]), text: h3[1], depth: 3 });
-    }
-  }
+  visit(tree, "element", (node: Element) => {
+    if (node.tagName !== "h2" && node.tagName !== "h3") return;
+    const text = textContent(node).trim();
+    if (!text) return;
+    items.push({ id: slugger.slug(text), text, depth: node.tagName === "h2" ? 2 : 3 });
+  });
+
   return items;
 }
