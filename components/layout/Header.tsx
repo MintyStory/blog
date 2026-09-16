@@ -1,26 +1,44 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useSidebar } from "@/components/providers/SidebarProvider";
 
 export default function Header() {
-  const [scrolled, setScrolled] = useState(false);
+  const pathname = usePathname();
+  const hasDarkHero = pathname === "/";
+  const [scrolledPastHero, setScrolledPastHero] = useState(false);
   const [hidden, setHidden] = useState(false);
   const lastY = useRef(0);
   const { toggle, open } = useSidebar();
   const SIDEBAR_WIDTH = "min(380px, 85vw)";
 
   useEffect(() => {
+    if (!hasDarkHero) return;
     function onScroll() {
       const y = window.scrollY;
-      setScrolled(y > 60);
+      setScrolledPastHero(y > 60);
+      setHidden(y > lastY.current && y > 220);
+      lastY.current = y;
+    }
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [hasDarkHero]);
+
+  useEffect(() => {
+    if (hasDarkHero) return;
+    function onScroll() {
+      const y = window.scrollY;
       setHidden(y > lastY.current && y > 220);
       lastY.current = y;
     }
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  }, [hasDarkHero]);
+
+  const scrolled = !hasDarkHero || scrolledPastHero;
 
   return (
     <header
